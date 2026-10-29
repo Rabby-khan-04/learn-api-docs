@@ -1,0 +1,90 @@
+# 25d-pattern-fraud-ban-unban.http
+
+$ curl -sS -i --request POST http://localhost:4010/v1/tenants/ten_acme/customers/cus_acme_12/ban -H 'Authorization: Bearer tok_acme_admin' -H 'Content-Type: application/json' --data-binary '{ "reason": "Chargeback abuse" }'
+HTTP/1.1 200 OK
+X-Request-Id: 6e476119-7a8d-4f72-ba1d-c2bc2cb36323
+Content-Type: application/json; charset=utf-8
+Content-Length: 281
+Date: Thu, 29 Oct 2026 12:30:05 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"customer":{"id":"cus_acme_12","email":"lara.croft.12@example.com","name":"Lara Croft","status":"BANNED","bannedAt":"2026-10-29T12:30:05.915Z","banReason":"Chargeback abuse","version":2,"createdAt":"2026-01-12T09:00:00.000Z","updatedAt":"2026-10-29T12:30:05.915Z"},"changed":true}
+
+$ curl -sS -i --request POST http://localhost:4010/v1/tenants/ten_acme/customers/cus_acme_12/ban -H 'Authorization: Bearer tok_acme_admin' -H 'Content-Type: application/json' --data-binary '{ "reason": "Chargeback abuse" }'
+HTTP/1.1 200 OK
+X-Request-Id: a49080c0-ff55-4d7d-876c-c9809bf5d551
+Content-Type: application/json; charset=utf-8
+Content-Length: 282
+Date: Thu, 29 Oct 2026 12:30:05 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"customer":{"id":"cus_acme_12","email":"lara.croft.12@example.com","name":"Lara Croft","status":"BANNED","bannedAt":"2026-10-29T12:30:05.915Z","banReason":"Chargeback abuse","version":2,"createdAt":"2026-01-12T09:00:00.000Z","updatedAt":"2026-10-29T12:30:05.915Z"},"changed":false}
+
+$ curl -sS -i --request POST http://localhost:4010/v1/tenants/ten_acme/customers/cus_acme_12/unban -H 'Authorization: Bearer tok_acme_admin' -H 'Content-Type: application/json' --data-binary '{ "reason": "Appeal accepted" }'
+HTTP/1.1 200 OK
+X-Request-Id: 58b6b85b-a5da-47a8-870c-e8c72533c0d5
+Content-Type: application/json; charset=utf-8
+Content-Length: 259
+Date: Thu, 29 Oct 2026 12:30:05 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"customer":{"id":"cus_acme_12","email":"lara.croft.12@example.com","name":"Lara Croft","status":"ACTIVE","bannedAt":null,"banReason":"Chargeback abuse","version":3,"createdAt":"2026-01-12T09:00:00.000Z","updatedAt":"2026-10-29T12:30:05.942Z"},"changed":true}
+
+$ curl -sS -i --request POST http://localhost:4010/v1/tenants/ten_acme/customers/cus_acme_12/unban -H 'Authorization: Bearer tok_acme_admin' -H 'Content-Type: application/json' --data-binary '{ "reason": "Appeal accepted" }'
+HTTP/1.1 200 OK
+X-Request-Id: 0e0228dd-9e32-4d05-9246-34f8d5f7f31f
+Content-Type: application/json; charset=utf-8
+Content-Length: 260
+Date: Thu, 29 Oct 2026 12:30:05 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"customer":{"id":"cus_acme_12","email":"lara.croft.12@example.com","name":"Lara Croft","status":"ACTIVE","bannedAt":null,"banReason":"Chargeback abuse","version":3,"createdAt":"2026-01-12T09:00:00.000Z","updatedAt":"2026-10-29T12:30:05.942Z"},"changed":false}
+
+$ curl -sS -i --request POST http://localhost:4010/v1/tenants/ten_acme/customers/cus_acme_12/ban -H 'Authorization: Bearer tok_acme_admin' -H 'Content-Type: application/json' --data-binary \{\}
+HTTP/1.1 422 Unprocessable Entity
+X-Request-Id: e484b679-e810-46d7-9a05-8543c55daaec
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 352
+Date: Thu, 29 Oct 2026 12:30:05 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/validation_failed","title":"Validation Failed","status":422,"detail":"One or more fields are invalid.","instance":"/v1/tenants/ten_acme/customers/cus_acme_12/ban","code":"validation_failed","errors":[{"pointer":"/reason","code":"invalid_type","message":"Invalid input: expected string, received undefined"}]}
+
+$ curl -sS -i --request POST http://localhost:4010/v1/tenants/ten_acme/customers/cus_acme_13/ban -H 'Authorization: Bearer tok_acme_support' -H 'Content-Type: application/json' --data-binary '{ "reason": "Suspicious refund pattern" }'
+HTTP/1.1 200 OK
+X-Request-Id: b5ede64a-0f57-4d09-87f6-468542d9a102
+Content-Type: application/json; charset=utf-8
+Content-Length: 288
+Date: Thu, 29 Oct 2026 12:30:05 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"customer":{"id":"cus_acme_13","email":"mona.lisa.13@example.com","name":"Mona Lisa","status":"BANNED","bannedAt":"2026-10-29T12:30:05.980Z","banReason":"Suspicious refund pattern","version":2,"createdAt":"2026-01-13T09:00:00.000Z","updatedAt":"2026-10-29T12:30:05.980Z"},"changed":true}
+
+$ curl -sS -i --request POST http://localhost:4010/v1/tenants/ten_globex/customers/cus_globex_01/ban -H 'Authorization: Bearer tok_acme_admin' -H 'Content-Type: application/json' --data-binary '{ "reason": "Cross-tenant attempt" }'
+HTTP/1.1 403 Forbidden
+X-Request-Id: 13c822fe-5e56-4971-b658-0abcb4fe8c46
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 231
+Date: Thu, 29 Oct 2026 12:30:05 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/forbidden","title":"Forbidden","status":403,"detail":"This token is not allowed to access that tenant.","instance":"/v1/tenants/ten_globex/customers/cus_globex_01/ban","code":"forbidden"}
+
+$ curl -sS -i --request POST http://localhost:4010/v1/tenants/ten_globex/customers/cus_globex_01/ban -H 'Authorization: Bearer tok_platform' -H 'Content-Type: application/json' --data-binary '{ "reason": "Platform-level fraud review" }'
+HTTP/1.1 200 OK
+X-Request-Id: 7ec18188-5cef-4270-a064-1a601c581a54
+Content-Type: application/json; charset=utf-8
+Content-Length: 299
+Date: Thu, 29 Oct 2026 12:30:06 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"customer":{"id":"cus_globex_01","email":"alice.johnson.1@example.com","name":"Alice Johnson","status":"BANNED","bannedAt":"2026-10-29T12:30:06.003Z","banReason":"Platform-level fraud review","version":2,"createdAt":"2026-01-01T09:00:00.000Z","updatedAt":"2026-10-29T12:30:06.003Z"},"changed":true}
+

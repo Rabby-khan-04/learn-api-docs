@@ -1,0 +1,16 @@
+@baseUrl = http://localhost:4013
+
+### DANGER DEMO: 200 OK with success:false and no data
+GET {{baseUrl}}/getProducts
+
+### DANGER DEMO: the tenant query parameter is ignored, all shops leak
+GET {{baseUrl}}/products?tenantId=ten_acme
+
+### DANGER DEMO: internal fields and float money in the response
+GET {{baseUrl}}/products/3
+
+### DANGER DEMO: 200 OK for a missing order
+GET {{baseUrl}}/orders/999
+
+### DANGER DEMO: one simulated query per row (N+1)
+GET {{baseUrl}}/products-n-plus-one

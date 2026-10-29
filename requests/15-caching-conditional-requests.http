@@ -1,0 +1,19 @@
+@baseUrl = http://localhost:4010
+
+### a cacheable single resource returns a strong ETag
+# @captureHeader etag = ETag
+GET {{baseUrl}}/api/tenants/ten_acme/products/prd_tee
+
+### the client already has this version: 304, no body
+GET {{baseUrl}}/api/tenants/ten_acme/products/prd_tee
+If-None-Match: {{etag}}
+
+### collections are private and not stored
+GET {{baseUrl}}/api/tenants/ten_acme/products?limit=2
+
+### the same product in another tenant has its own representation
+GET {{baseUrl}}/api/tenants/ten_globex/products/prd_eu_mug
+
+### Authorization is part of the cache key
+GET {{baseUrl}}/api/tenants/ten_acme/products/prd_tee
+Authorization: Bearer tok_acme_admin

@@ -1,0 +1,90 @@
+# 05a-query-filtering-sorting.http
+
+$ curl -sS -i --request GET http://localhost:4011/api/tenants/ten_acme/products\?active=true
+HTTP/1.1 200 OK
+X-Request-Id: 483b9626-dc47-4242-9301-4fd87864a7ba
+Content-Type: application/json; charset=utf-8
+Content-Length: 861
+Date: Thu, 29 Oct 2026 12:26:45 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"data":[{"id":"prd_hoodie","sku":"HOO-001","slug":"trail-hoodie","name":"Trail Hoodie","description":"Fleece-lined hoodie.","priceCents":4999,"currency":"USD","stock":8,"active":true,"version":1,"createdAt":"2026-01-01T11:00:00.000Z","updatedAt":"2026-01-01T11:00:00.000Z"},{"id":"prd_mug","sku":"MUG-001","slug":"camp-mug","name":"Camp Mug","description":"Enamel mug, 350 ml.","priceCents":1299,"currency":"USD","stock":120,"active":true,"version":1,"createdAt":"2026-01-01T10:00:00.000Z","updatedAt":"2026-01-01T10:00:00.000Z"},{"id":"prd_tee","sku":"TEE-001","slug":"classic-tee","name":"Classic T-Shirt","description":"Heavyweight cotton tee.","priceCents":1999,"currency":"USD","stock":50,"active":true,"version":1,"createdAt":"2026-01-01T09:00:00.000Z","updatedAt":"2026-01-01T09:00:00.000Z"}],"pagination":{"limit":20,"hasMore":false,"nextCursor":null}}
+
+$ curl -sS -i --request GET http://localhost:4011/api/tenants/ten_acme/products\?minPriceCents=1500\&maxPriceCents=5000
+HTTP/1.1 200 OK
+X-Request-Id: f39006ab-936c-4c8f-b2b7-bd392f537148
+Content-Type: application/json; charset=utf-8
+Content-Length: 863
+Date: Thu, 29 Oct 2026 12:26:45 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"data":[{"id":"prd_cap","sku":"CAP-001","slug":"running-cap","name":"Running Cap","description":"Lightweight cap.","priceCents":2499,"currency":"USD","stock":0,"active":false,"version":1,"createdAt":"2026-01-01T12:00:00.000Z","updatedAt":"2026-01-01T12:00:00.000Z"},{"id":"prd_hoodie","sku":"HOO-001","slug":"trail-hoodie","name":"Trail Hoodie","description":"Fleece-lined hoodie.","priceCents":4999,"currency":"USD","stock":8,"active":true,"version":1,"createdAt":"2026-01-01T11:00:00.000Z","updatedAt":"2026-01-01T11:00:00.000Z"},{"id":"prd_tee","sku":"TEE-001","slug":"classic-tee","name":"Classic T-Shirt","description":"Heavyweight cotton tee.","priceCents":1999,"currency":"USD","stock":50,"active":true,"version":1,"createdAt":"2026-01-01T09:00:00.000Z","updatedAt":"2026-01-01T09:00:00.000Z"}],"pagination":{"limit":20,"hasMore":false,"nextCursor":null}}
+
+$ curl -sS -i --request GET http://localhost:4011/api/tenants/ten_acme/products\?sort=name
+HTTP/1.1 200 OK
+X-Request-Id: 807afc61-66ff-4529-92d3-1fcbcabd6368
+Content-Type: application/json; charset=utf-8
+Content-Length: 1119
+Date: Thu, 29 Oct 2026 12:26:45 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"data":[{"id":"prd_mug","sku":"MUG-001","slug":"camp-mug","name":"Camp Mug","description":"Enamel mug, 350 ml.","priceCents":1299,"currency":"USD","stock":120,"active":true,"version":1,"createdAt":"2026-01-01T10:00:00.000Z","updatedAt":"2026-01-01T10:00:00.000Z"},{"id":"prd_tee","sku":"TEE-001","slug":"classic-tee","name":"Classic T-Shirt","description":"Heavyweight cotton tee.","priceCents":1999,"currency":"USD","stock":50,"active":true,"version":1,"createdAt":"2026-01-01T09:00:00.000Z","updatedAt":"2026-01-01T09:00:00.000Z"},{"id":"prd_cap","sku":"CAP-001","slug":"running-cap","name":"Running Cap","description":"Lightweight cap.","priceCents":2499,"currency":"USD","stock":0,"active":false,"version":1,"createdAt":"2026-01-01T12:00:00.000Z","updatedAt":"2026-01-01T12:00:00.000Z"},{"id":"prd_hoodie","sku":"HOO-001","slug":"trail-hoodie","name":"Trail Hoodie","description":"Fleece-lined hoodie.","priceCents":4999,"currency":"USD","stock":8,"active":true,"version":1,"createdAt":"2026-01-01T11:00:00.000Z","updatedAt":"2026-01-01T11:00:00.000Z"}],"pagination":{"limit":20,"hasMore":false,"nextCursor":null}}
+
+$ curl -sS -i --request GET http://localhost:4011/api/tenants/ten_acme/products\?sort=-priceCents
+HTTP/1.1 200 OK
+X-Request-Id: 1ddfc23a-e33d-42f8-9a45-b45386e90097
+Content-Type: application/json; charset=utf-8
+Content-Length: 1119
+Date: Thu, 29 Oct 2026 12:26:45 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"data":[{"id":"prd_hoodie","sku":"HOO-001","slug":"trail-hoodie","name":"Trail Hoodie","description":"Fleece-lined hoodie.","priceCents":4999,"currency":"USD","stock":8,"active":true,"version":1,"createdAt":"2026-01-01T11:00:00.000Z","updatedAt":"2026-01-01T11:00:00.000Z"},{"id":"prd_cap","sku":"CAP-001","slug":"running-cap","name":"Running Cap","description":"Lightweight cap.","priceCents":2499,"currency":"USD","stock":0,"active":false,"version":1,"createdAt":"2026-01-01T12:00:00.000Z","updatedAt":"2026-01-01T12:00:00.000Z"},{"id":"prd_tee","sku":"TEE-001","slug":"classic-tee","name":"Classic T-Shirt","description":"Heavyweight cotton tee.","priceCents":1999,"currency":"USD","stock":50,"active":true,"version":1,"createdAt":"2026-01-01T09:00:00.000Z","updatedAt":"2026-01-01T09:00:00.000Z"},{"id":"prd_mug","sku":"MUG-001","slug":"camp-mug","name":"Camp Mug","description":"Enamel mug, 350 ml.","priceCents":1299,"currency":"USD","stock":120,"active":true,"version":1,"createdAt":"2026-01-01T10:00:00.000Z","updatedAt":"2026-01-01T10:00:00.000Z"}],"pagination":{"limit":20,"hasMore":false,"nextCursor":null}}
+
+$ curl -sS -i --request GET http://localhost:4011/api/tenants/ten_acme/products\?sort=cheapest
+HTTP/1.1 422 Unprocessable Entity
+X-Request-Id: ed84960f-5117-426e-a121-9515cc32594a
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 409
+Date: Thu, 29 Oct 2026 12:26:45 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/validation_failed","title":"Validation Failed","status":422,"detail":"One or more fields are invalid.","instance":"/api/tenants/ten_acme/products?sort=cheapest","code":"validation_failed","errors":[{"pointer":"/sort","code":"invalid_value","message":"Invalid option: expected one of \"createdAt\"|\"-createdAt\"|\"name\"|\"-name\"|\"priceCents\"|\"-priceCents\""}]}
+
+$ curl -sS -i --request GET http://localhost:4011/api/tenants/ten_acme/products\?tenant=ten_globex
+HTTP/1.1 422 Unprocessable Entity
+X-Request-Id: 281b35b0-06d5-4621-ba8b-27594449e17a
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 330
+Date: Thu, 29 Oct 2026 12:26:45 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/validation_failed","title":"Validation Failed","status":422,"detail":"One or more fields are invalid.","instance":"/api/tenants/ten_acme/products?tenant=ten_globex","code":"validation_failed","errors":[{"pointer":"","code":"unrecognized_keys","message":"Unrecognized key: \"tenant\""}]}
+
+$ curl -sS -i --request GET http://localhost:4011/api/tenants/ten_acme/products\?minPriceCents=5000\&maxPriceCents=1000
+HTTP/1.1 422 Unprocessable Entity
+X-Request-Id: 002d8a6c-adfb-4e39-ba3a-1b99bf2449a7
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 383
+Date: Thu, 29 Oct 2026 12:26:45 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/validation_failed","title":"Validation Failed","status":422,"detail":"One or more fields are invalid.","instance":"/api/tenants/ten_acme/products?minPriceCents=5000&maxPriceCents=1000","code":"validation_failed","errors":[{"pointer":"/minPriceCents","code":"custom","message":"minPriceCents must be less than or equal to maxPriceCents."}]}
+
+$ curl -sS -i --request GET http://localhost:4011/api/tenants/ten_acme/products\?maxPriceCents=100
+HTTP/1.1 200 OK
+X-Request-Id: 82e5b489-3e05-486b-b02c-239aeecaa16f
+Content-Type: application/json; charset=utf-8
+Content-Length: 71
+Date: Thu, 29 Oct 2026 12:26:45 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"data":[],"pagination":{"limit":20,"hasMore":false,"nextCursor":null}}
+

@@ -1,0 +1,132 @@
+# 11-postgres-prisma-migration.http
+
+$ curl -sS -i --request GET http://localhost:4010/health
+HTTP/1.1 200 OK
+X-Request-Id: 0f35eb5e-fd78-4ff8-8de2-4b5de2e04f8e
+Content-Type: application/json; charset=utf-8
+Content-Length: 15
+Date: Thu, 29 Oct 2026 12:27:11 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"status":"ok"}
+
+$ curl -sS -i --request GET http://localhost:4010/api/tenants/ten_acme/products\?limit=2\&sort=createdAt
+HTTP/1.1 200 OK
+X-Request-Id: 56cfef2d-6fd7-4b25-a816-dfab60a0580f
+Content-Type: application/json; charset=utf-8
+Content-Length: 665
+Date: Thu, 29 Oct 2026 12:27:11 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"data":[{"id":"prd_tee","sku":"TEE-001","slug":"classic-tee","name":"Classic T-Shirt","description":"Heavyweight cotton tee.","priceCents":1999,"currency":"USD","stock":50,"active":true,"version":1,"createdAt":"2026-01-01T09:00:00.000Z","updatedAt":"2026-10-29T12:27:11.502Z"},{"id":"prd_mug","sku":"MUG-001","slug":"camp-mug","name":"Camp Mug","description":"Enamel mug, 350 ml.","priceCents":1299,"currency":"USD","stock":120,"active":true,"version":1,"createdAt":"2026-01-01T10:00:00.000Z","updatedAt":"2026-10-29T12:27:11.502Z"}],"pagination":{"limit":2,"hasMore":true,"nextCursor":"eyJjcmVhdGVkQXQiOiIyMDI2LTAxLTAxVDEwOjAwOjAwLjAwMFoiLCJpZCI6InByZF9tdWcifQ"}}
+
+$ curl -sS -i --request GET http://localhost:4010/api/tenants/ten_acme/customers\?limit=2\&sort=createdAt
+HTTP/1.1 200 OK
+X-Request-Id: 45ef4421-8d01-45a6-85eb-c8df192577e8
+Content-Type: application/json; charset=utf-8
+Content-Length: 583
+Date: Thu, 29 Oct 2026 12:27:11 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"data":[{"id":"cus_acme_01","email":"alice.johnson.1@example.com","name":"Alice Johnson","status":"ACTIVE","bannedAt":null,"banReason":null,"version":1,"createdAt":"2026-01-01T09:00:00.000Z","updatedAt":"2026-10-29T12:27:11.511Z"},{"id":"cus_acme_02","email":"bob.smith.2@example.com","name":"Bob Smith","status":"ACTIVE","bannedAt":null,"banReason":null,"version":1,"createdAt":"2026-01-02T09:00:00.000Z","updatedAt":"2026-10-29T12:27:11.511Z"}],"pagination":{"limit":2,"hasMore":true,"nextCursor":"eyJjcmVhdGVkQXQiOiIyMDI2LTAxLTAyVDA5OjAwOjAwLjAwMFoiLCJpZCI6ImN1c19hY21lXzAyIn0"}}
+
+$ curl -sS -i --request GET http://localhost:4010/api/tenants/ten_acme/orders/ord_demo_pending
+HTTP/1.1 200 OK
+X-Request-Id: add38e47-a028-498d-a340-5c58848b411e
+Content-Type: application/json; charset=utf-8
+Content-Length: 385
+Date: Thu, 29 Oct 2026 12:27:11 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"ord_demo_pending","status":"PENDING","customerId":"cus_acme_03","items":[{"productId":"prd_hoodie","sku":"HOO-001","name":"Trail Hoodie","unitPriceCents":4999,"quantity":1,"lineTotalCents":4999}],"subtotalCents":4999,"discountCents":0,"totalCents":4999,"currency":"USD","couponCode":null,"version":1,"createdAt":"2026-01-20T09:00:00.000Z","updatedAt":"2026-10-29T12:27:11.523Z"}
+
+$ curl -sS -i --request GET http://localhost:4010/api/tenants/ten_globex/orders/ord_demo_pending
+HTTP/1.1 404 Not Found
+X-Request-Id: 1a024935-a613-49d5-8cbe-d8cd416535b7
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 196
+Date: Thu, 29 Oct 2026 12:27:11 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/not_found","title":"Not Found","status":404,"detail":"Order not found.","instance":"/api/tenants/ten_globex/orders/ord_demo_pending","code":"not_found"}
+
+
+<direct database inspection, same database the API is using:>
+
+$ docker exec api-learn-db psql -U postgres -d api_learn -c '\dt'
+               List of relations
+ Schema |        Name        | Type  |  Owner   
+--------+--------------------+-------+----------
+ public | _prisma_migrations | table | postgres
+ public | coupon_redemptions | table | postgres
+ public | coupons            | table | postgres
+ public | customers          | table | postgres
+ public | fraud_events       | table | postgres
+ public | idempotency_keys   | table | postgres
+ public | operations         | table | postgres
+ public | order_items        | table | postgres
+ public | orders             | table | postgres
+ public | payments           | table | postgres
+ public | products           | table | postgres
+ public | tenants            | table | postgres
+ public | uploads            | table | postgres
+ public | webhook_deliveries | table | postgres
+ public | webhook_endpoints  | table | postgres
+(15 rows)
+
+
+$ docker exec api-learn-db psql -U postgres -d api_learn -c '\d order_items'
+                         Table "public.order_items"
+      Column      |          Type          | Collation | Nullable | Default 
+------------------+------------------------+-----------+----------+---------
+ id               | character varying(50)  |           | not null | 
+ tenant_id        | character varying(30)  |           | not null | 
+ order_id         | character varying(50)  |           | not null | 
+ product_id       | character varying(50)  |           | not null | 
+ sku_snapshot     | character varying(40)  |           | not null | 
+ name_snapshot    | character varying(200) |           | not null | 
+ unit_price_cents | integer                |           | not null | 
+ quantity         | integer                |           | not null | 
+ line_total_cents | integer                |           | not null | 
+Indexes:
+    "order_items_pkey" PRIMARY KEY, btree (id)
+    "order_items_tenant_id_order_id_idx" btree (tenant_id, order_id)
+Foreign-key constraints:
+    "order_items_tenant_id_fkey" FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON UPDATE CASCADE ON DELETE CASCADE
+    "order_items_tenant_id_order_id_fkey" FOREIGN KEY (tenant_id, order_id) REFERENCES orders(tenant_id, id) ON UPDATE CASCADE ON DELETE CASCADE
+    "order_items_tenant_id_product_id_fkey" FOREIGN KEY (tenant_id, product_id) REFERENCES products(tenant_id, id) ON UPDATE CASCADE ON DELETE RESTRICT
+
+
+$ docker exec api-learn-db psql -U postgres -d api_learn -c '\d idempotency_keys'
+                            Table "public.idempotency_keys"
+    Column     |            Type             | Collation | Nullable |      Default      
+---------------+-----------------------------+-----------+----------+-------------------
+ id            | character varying(50)       |           | not null | 
+ tenant_id     | character varying(30)       |           | not null | 
+ key           | character varying(200)      |           | not null | 
+ request_hash  | character varying(64)       |           | not null | 
+ method        | character varying(10)       |           | not null | 
+ path          | character varying(300)      |           | not null | 
+ status_code   | integer                     |           |          | 
+ response_body | jsonb                       |           |          | 
+ created_at    | timestamp(3) with time zone |           | not null | CURRENT_TIMESTAMP
+ expires_at    | timestamp(3) with time zone |           | not null | 
+Indexes:
+    "idempotency_keys_pkey" PRIMARY KEY, btree (id)
+    "idempotency_keys_tenant_id_expires_at_idx" btree (tenant_id, expires_at)
+    "idempotency_keys_tenant_id_key_key" UNIQUE, btree (tenant_id, key)
+Foreign-key constraints:
+    "idempotency_keys_tenant_id_fkey" FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON UPDATE CASCADE ON DELETE CASCADE
+
+
+$ docker exec api-learn-db psql -U postgres -d api_learn -c 'select migration_name from _prisma_migrations order by started_at;'
+   migration_name    
+---------------------
+ 20261029121154_init
+(1 row)
+

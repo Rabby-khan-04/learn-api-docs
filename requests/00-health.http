@@ -1,0 +1,8 @@
+### api-learn environment check
+### Requires the VS Code "REST Client" extension (humao.rest-client) or JetBrains HTTP client.
+### Run `npm run start` in api-learn/ first.
+
+@baseUrl = http://localhost:4010
+
+### Health: proves the server boots and routes requests
+GET {{baseUrl}}/health

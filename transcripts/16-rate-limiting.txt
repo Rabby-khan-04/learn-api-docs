@@ -1,0 +1,55 @@
+# 16-rate-limiting.http
+
+$ curl -sS -i --request GET http://localhost:4012/v1/tenants/ten_globex/products\?limit=1
+HTTP/1.1 200 OK
+X-Request-Id: a45ae624-57b6-45a6-8ef2-26789e11b652
+RateLimit-Policy: "standard";q=2;w=60
+RateLimit: "standard";r=1;t=60
+Content-Type: application/json; charset=utf-8
+Content-Length: 403
+Date: Thu, 29 Oct 2026 12:27:38 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"data":[{"id":"prd_eu_tee","sku":"TEE-EU","slug":"eu-tee","name":"EU Classic Tee","description":"Euro edition tee.","priceCents":2199,"currency":"EUR","stock":25,"active":true,"version":1,"createdAt":"2026-01-01T14:00:00.000Z","updatedAt":"2026-10-29T12:27:24.625Z"}],"pagination":{"limit":1,"hasMore":true,"nextCursor":"eyJjcmVhdGVkQXQiOiIyMDI2LTAxLTAxVDE0OjAwOjAwLjAwMFoiLCJpZCI6InByZF9ldV90ZWUifQ"}}
+
+$ curl -sS -i --request GET http://localhost:4012/v1/tenants/ten_globex/products\?limit=1
+HTTP/1.1 200 OK
+X-Request-Id: 1db6249f-8020-4a1f-a335-72d4f78087ad
+RateLimit-Policy: "standard";q=2;w=60
+RateLimit: "standard";r=0;t=60
+Content-Type: application/json; charset=utf-8
+Content-Length: 403
+Date: Thu, 29 Oct 2026 12:27:38 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"data":[{"id":"prd_eu_tee","sku":"TEE-EU","slug":"eu-tee","name":"EU Classic Tee","description":"Euro edition tee.","priceCents":2199,"currency":"EUR","stock":25,"active":true,"version":1,"createdAt":"2026-01-01T14:00:00.000Z","updatedAt":"2026-10-29T12:27:24.625Z"}],"pagination":{"limit":1,"hasMore":true,"nextCursor":"eyJjcmVhdGVkQXQiOiIyMDI2LTAxLTAxVDE0OjAwOjAwLjAwMFoiLCJpZCI6InByZF9ldV90ZWUifQ"}}
+
+$ curl -sS -i --request GET http://localhost:4012/v1/tenants/ten_globex/products\?limit=1
+HTTP/1.1 429 Too Many Requests
+X-Request-Id: d0a1a9e4-8373-4868-b2be-95b05a457413
+RateLimit-Policy: "standard";q=2;w=60
+RateLimit: "standard";r=0;t=60
+Retry-After: 60
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 256
+Date: Thu, 29 Oct 2026 12:27:38 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/rate_limited","title":"Too Many Requests","status":429,"detail":"Too many requests for this tenant. Retry later.","instance":"/v1/tenants/ten_globex/products?limit=1","code":"rate_limited","retryAfterSeconds":60}
+
+$ curl -sS -i --request GET http://localhost:4012/v1/tenants/ten_acme/products\?limit=1
+HTTP/1.1 200 OK
+X-Request-Id: bbafa7f4-c407-4237-9a88-cfe4af8100f8
+RateLimit-Policy: "standard";q=2;w=60
+RateLimit: "standard";r=1;t=60
+Content-Type: application/json; charset=utf-8
+Content-Length: 398
+Date: Thu, 29 Oct 2026 12:27:38 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"data":[{"id":"prd_cap","sku":"CAP-001","slug":"running-cap","name":"Running Cap","description":"Lightweight cap.","priceCents":2499,"currency":"USD","stock":0,"active":false,"version":1,"createdAt":"2026-01-01T12:00:00.000Z","updatedAt":"2026-10-29T12:27:24.625Z"}],"pagination":{"limit":1,"hasMore":true,"nextCursor":"eyJjcmVhdGVkQXQiOiIyMDI2LTAxLTAxVDEyOjAwOjAwLjAwMFoiLCJpZCI6InByZF9jYXAifQ"}}
+

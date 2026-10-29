@@ -1,0 +1,53 @@
+@baseUrl = http://localhost:4010
+
+### no credentials: 401 and a WWW-Authenticate challenge
+GET {{baseUrl}}/v1/tenants/ten_acme/products
+
+### a wrong token: still 401
+GET {{baseUrl}}/v1/tenants/ten_acme/products
+Authorization: Bearer tok_not_real
+
+### a valid Acme token asking for Globex: 403
+GET {{baseUrl}}/v1/tenants/ten_globex/products
+Authorization: Bearer tok_acme_admin
+
+### the matching tenant works
+GET {{baseUrl}}/v1/tenants/ten_acme/products?limit=1
+Authorization: Bearer tok_acme_admin
+
+### support can read but cannot create products
+POST {{baseUrl}}/v1/tenants/ten_acme/products
+Authorization: Bearer tok_acme_support
+Content-Type: application/json
+
+{
+  "sku": "SUP-001",
+  "slug": "support-product",
+  "name": "Support Product",
+  "priceCents": 100,
+  "currency": "USD",
+  "stock": 1
+}
+
+### an admin of the same tenant can create
+# @capture createdId = $.id
+POST {{baseUrl}}/v1/tenants/ten_acme/products
+Authorization: Bearer tok_acme_admin
+Content-Type: application/json
+
+{
+  "sku": "ADM-001",
+  "slug": "admin-product",
+  "name": "Admin Product",
+  "priceCents": 100,
+  "currency": "USD",
+  "stock": 1
+}
+
+### a platform admin may work across tenants
+GET {{baseUrl}}/v1/tenants/ten_globex/products?limit=1
+Authorization: Bearer tok_platform
+
+### a tenant that does not exist is 403, not a hint that it is missing
+GET {{baseUrl}}/v1/tenants/ten_ghost/products
+Authorization: Bearer tok_platform

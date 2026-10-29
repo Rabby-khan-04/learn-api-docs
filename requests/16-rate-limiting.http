@@ -1,0 +1,13 @@
+@baseUrl = http://localhost:4012
+
+### request 1 of 2 in this window
+GET {{baseUrl}}/v1/tenants/ten_globex/products?limit=1
+
+### request 2 of 2
+GET {{baseUrl}}/v1/tenants/ten_globex/products?limit=1
+
+### request 3 is limited: 429 + Retry-After
+GET {{baseUrl}}/v1/tenants/ten_globex/products?limit=1
+
+### the Acme bucket is separate and still has quota
+GET {{baseUrl}}/v1/tenants/ten_acme/products?limit=1

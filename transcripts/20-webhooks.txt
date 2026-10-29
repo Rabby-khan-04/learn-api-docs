@@ -1,0 +1,125 @@
+# 20-webhooks.http
+
+$ curl -sS -i --request GET http://localhost:4010/v1/tenants/ten_acme/webhook-endpoints -H 'Authorization: Bearer tok_acme_admin'
+HTTP/1.1 200 OK
+X-Request-Id: afe604ba-8f0a-49dd-b53d-235478f61c0b
+Content-Type: application/json; charset=utf-8
+Content-Length: 123
+Date: Thu, 29 Oct 2026 12:29:18 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"data":[{"id":"wh_acme","url":"http://localhost:4020/hooks/orders","active":true,"createdAt":"2026-10-29T12:29:18.738Z"}]}
+
+$ curl -sS -i --request POST http://localhost:4010/v1/tenants/ten_acme/webhook-endpoints -H 'Authorization: Bearer tok_acme_admin' -H 'Content-Type: application/json' --data-binary '{ "url": "http://localhost:4099/hooks/dead" }'
+HTTP/1.1 201 Created
+X-Request-Id: 37af2cbe-439e-4557-a9ec-d33731c6f87b
+Location: /v1/tenants/ten_acme/webhook-endpoints/whe_7267fba3-9251-4009-951d-83dfc00fa8a6
+Content-Type: application/json; charset=utf-8
+Content-Length: 193
+Date: Thu, 29 Oct 2026 12:29:18 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"whe_7267fba3-9251-4009-951d-83dfc00fa8a6","url":"http://localhost:4099/hooks/dead","active":true,"secret":"whsec_6OV6zX8no63941DyVtAC-SGw1WlzesnX","createdAt":"2026-10-29T12:29:18.925Z"}
+
+$ curl -sS -i --request POST http://localhost:4010/v1/tenants/ten_acme/orders -H 'Authorization: Bearer tok_acme_admin' -H 'Content-Type: application/json' -H 'Idempotency-Key: webhook-demo-001' --data-binary '{
+  "customerId": "cus_acme_08",
+  "items": [ { "productId": "prd_mug", "quantity": 1 } ]
+}'
+HTTP/1.1 201 Created
+X-Request-Id: 897066af-6565-4bcb-93ae-9099ac01958c
+Cache-Control: no-store
+Location: /v1/tenants/ten_acme/orders/ord_b0a22855-297a-409a-9384-87936879feb1
+Content-Type: application/json; charset=utf-8
+Content-Length: 402
+Date: Thu, 29 Oct 2026 12:29:18 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"ord_b0a22855-297a-409a-9384-87936879feb1","status":"PENDING","customerId":"cus_acme_08","items":[{"productId":"prd_mug","sku":"MUG-001","name":"Camp Mug","unitPriceCents":1299,"quantity":1,"lineTotalCents":1299}],"subtotalCents":1299,"discountCents":0,"totalCents":1299,"currency":"USD","couponCode":null,"version":1,"createdAt":"2026-10-29T12:29:18.947Z","updatedAt":"2026-10-29T12:29:18.947Z"}
+
+# wait 800 ms
+
+$ curl -sS -i --request GET http://localhost:4010/v1/tenants/ten_acme/webhook-endpoints/wh_acme/deliveries -H 'Authorization: Bearer tok_acme_admin'
+HTTP/1.1 200 OK
+X-Request-Id: 3761b2c7-afb9-4105-bf9b-3606f0c60634
+Content-Type: application/json; charset=utf-8
+Content-Length: 272
+Date: Thu, 29 Oct 2026 12:29:19 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"data":[{"id":"whd_7b8dd300-2e2c-4568-8f7b-ffa414e3db14","eventId":"evt_c318f9f5-43e9-4914-a8c8-2deb20207f45","eventType":"order.created","status":"DELIVERED","attempts":1,"lastError":null,"createdAt":"2026-10-29T12:29:18.959Z","deliveredAt":"2026-10-29T12:29:18.967Z"}]}
+
+# wait 2500 ms
+
+$ curl -sS -i --request GET http://localhost:4010/v1/tenants/ten_acme/webhook-endpoints/whe_7267fba3-9251-4009-951d-83dfc00fa8a6/deliveries -H 'Authorization: Bearer tok_acme_admin'
+HTTP/1.1 200 OK
+X-Request-Id: 2e81e229-d009-4469-946f-d071b4076c4a
+Content-Type: application/json; charset=utf-8
+Content-Length: 257
+Date: Thu, 29 Oct 2026 12:29:22 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"data":[{"id":"whd_8f3f7da2-38be-43f8-b1bb-a49ef46827f1","eventId":"evt_c318f9f5-43e9-4914-a8c8-2deb20207f45","eventType":"order.created","status":"FAILED","attempts":3,"lastError":"fetch failed","createdAt":"2026-10-29T12:29:18.961Z","deliveredAt":null}]}
+
+$ curl -sS -i --request GET http://localhost:4010/v1/tenants/ten_globex/webhook-endpoints/wh_acme/deliveries -H 'Authorization: Bearer tok_acme_admin'
+HTTP/1.1 403 Forbidden
+X-Request-Id: abc74856-a4b4-40b4-8b52-56240414379d
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 240
+Date: Thu, 29 Oct 2026 12:29:22 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/forbidden","title":"Forbidden","status":403,"detail":"This token is not allowed to access that tenant.","instance":"/v1/tenants/ten_globex/webhook-endpoints/wh_acme/deliveries","code":"forbidden"}
+
+
+<talking to the small receiver from scripts/webhook-receiver.ts directly:>
+
+$ curl -sS -i --request POST http://localhost:4020/hooks/orders -H 'Content-Type: application/json' -H 'X-Webhook-Signature: t=1793277068,v1=55823b131deee40a0758c1e55f5dcb5a5cfa402ec543a6c05669025238dff944' --data-binary '{"id":"evt_demo_0001","type":"order.created","data":{"orderId":"ord_demo_pending"}}'
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Content-Length: 35
+ETag: W/"23-Hb81zufyQ22iv23kQ26pIwpmivo"
+Date: Thu, 29 Oct 2026 12:31:08 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"received":true,"duplicate":false}
+$ curl -sS -i --request POST http://localhost:4020/hooks/orders -H 'Content-Type: application/json' -H 'X-Webhook-Signature: t=1793277068,v1=55823b131deee40a0758c1e55f5dcb5a5cfa402ec543a6c05669025238dff944' --data-binary '{"id":"evt_demo_0001","type":"order.created","data":{"orderId":"ord_demo_pending"}}'
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Content-Length: 34
+ETag: W/"22-A/EZTkeyyrDOEXJE4tVzxbisBO4"
+Date: Thu, 29 Oct 2026 12:31:08 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"received":true,"duplicate":true}
+$ curl -sS -i --request POST http://localhost:4020/hooks/orders -H 'Content-Type: application/json' -H 'X-Webhook-Signature: t=1793277068,v1=deadbeef' --data-binary '{"id":"evt_demo_0001","type":"order.created","data":{"orderId":"ord_demo_pending"}}'
+HTTP/1.1 401 Unauthorized
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Content-Length: 30
+ETag: W/"1e-sW25V/1f0LtpK2K/TT45NVFjgZQ"
+Date: Thu, 29 Oct 2026 12:31:08 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"error":"signature mismatch"}
+$ curl -sS -i --request POST http://localhost:4020/hooks/orders -H 'Content-Type: application/json' -H 'X-Webhook-Signature: t=1793276168,v1=6923358ec64851904652398a1e0cd0024664702a8024ee7204cd81a367f9e2d0' --data-binary '{"id":"evt_demo_0001","type":"order.created","data":{"orderId":"ord_demo_pending"}}'
+HTTP/1.1 401 Unauthorized
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Content-Length: 36
+ETag: W/"24-HJmhMFSvEEvtqHbWw4/u3l0aE9g"
+Date: Thu, 29 Oct 2026 12:31:08 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"error":"timestamp too old (900s)"}

@@ -1,0 +1,118 @@
+# 12-idempotency-keys.http
+
+$ curl -sS -i --request POST http://localhost:4010/api/tenants/ten_acme/orders -H 'Content-Type: application/json' -H 'Idempotency-Key: order-idem-demo-001' --data-binary '{
+  "customerId": "cus_acme_01",
+  "items": [
+    { "productId": "prd_tee", "quantity": 2 },
+    { "productId": "prd_mug", "quantity": 1 }
+  ]
+}'
+HTTP/1.1 201 Created
+X-Request-Id: 2578293a-3279-43fb-9fd1-05caaad13ac8
+Cache-Control: no-store
+Location: /api/tenants/ten_acme/orders/ord_bbbd1e9e-14a4-49c4-b899-254baf3dc2f4
+Content-Type: application/json; charset=utf-8
+Content-Length: 524
+Date: Thu, 29 Oct 2026 12:27:12 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"ord_bbbd1e9e-14a4-49c4-b899-254baf3dc2f4","status":"PENDING","customerId":"cus_acme_01","items":[{"productId":"prd_mug","sku":"MUG-001","name":"Camp Mug","unitPriceCents":1299,"quantity":1,"lineTotalCents":1299},{"productId":"prd_tee","sku":"TEE-001","name":"Classic T-Shirt","unitPriceCents":1999,"quantity":2,"lineTotalCents":3998}],"subtotalCents":5297,"discountCents":0,"totalCents":5297,"currency":"USD","couponCode":null,"version":1,"createdAt":"2026-10-29T12:27:12.951Z","updatedAt":"2026-10-29T12:27:12.951Z"}
+
+$ curl -sS -i --request POST http://localhost:4010/api/tenants/ten_acme/orders -H 'Content-Type: application/json' -H 'Idempotency-Key: order-idem-demo-001' --data-binary '{
+  "customerId": "cus_acme_01",
+  "items": [
+    { "productId": "prd_tee", "quantity": 2 },
+    { "productId": "prd_mug", "quantity": 1 }
+  ]
+}'
+HTTP/1.1 201 Created
+X-Request-Id: 5d97e2d4-8eef-4a4c-a30a-bc61d7fd669e
+Idempotent-Replayed: true
+Cache-Control: no-store
+Location: /api/tenants/ten_acme/orders/ord_bbbd1e9e-14a4-49c4-b899-254baf3dc2f4
+Content-Type: application/json; charset=utf-8
+Content-Length: 524
+Date: Thu, 29 Oct 2026 12:27:13 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"ord_bbbd1e9e-14a4-49c4-b899-254baf3dc2f4","items":[{"sku":"MUG-001","name":"Camp Mug","quantity":1,"productId":"prd_mug","lineTotalCents":1299,"unitPriceCents":1299},{"sku":"TEE-001","name":"Classic T-Shirt","quantity":2,"productId":"prd_tee","lineTotalCents":3998,"unitPriceCents":1999}],"status":"PENDING","version":1,"currency":"USD","createdAt":"2026-10-29T12:27:12.951Z","updatedAt":"2026-10-29T12:27:12.951Z","couponCode":null,"customerId":"cus_acme_01","totalCents":5297,"discountCents":0,"subtotalCents":5297}
+
+$ curl -sS -i --request POST http://localhost:4010/api/tenants/ten_acme/orders -H 'Content-Type: application/json' -H 'Idempotency-Key: order-idem-demo-001' --data-binary '{
+  "customerId": "cus_acme_01",
+  "items": [
+    { "productId": "prd_tee", "quantity": 3 }
+  ]
+}'
+HTTP/1.1 409 Conflict
+X-Request-Id: 330592b8-4f69-4ccd-bff8-8a9e73b5151f
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 249
+Date: Thu, 29 Oct 2026 12:27:13 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/idempotency_key_reused","title":"Conflict","status":409,"detail":"This Idempotency-Key was already used with a different request.","instance":"/api/tenants/ten_acme/orders","code":"idempotency_key_reused"}
+
+$ curl -sS -i --request POST http://localhost:4010/api/tenants/ten_acme/orders -H 'Content-Type: application/json' --data-binary '{
+  "customerId": "cus_acme_01",
+  "items": [
+    { "productId": "prd_tee", "quantity": 1 }
+  ]
+}'
+HTTP/1.1 400 Bad Request
+X-Request-Id: 3feacaab-4870-4ad9-b246-419194b74545
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 261
+Date: Thu, 29 Oct 2026 12:27:13 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/idempotency_key_required","title":"Bad Request","status":400,"detail":"Send an Idempotency-Key header so a retry cannot create a duplicate.","instance":"/api/tenants/ten_acme/orders","code":"idempotency_key_required"}
+
+$ curl -sS -i --request POST http://localhost:4010/api/tenants/ten_acme/orders/ord_demo_payable/payments -H 'Content-Type: application/json' -H 'Idempotency-Key: pay-idem-demo-001' --data-binary '{
+  "provider": "fakepay",
+  "providerRef": "fp_charge_demo_001"
+}'
+HTTP/1.1 201 Created
+X-Request-Id: 25e48662-dd83-4d3f-8c3b-eb83be8ca1b5
+Cache-Control: no-store
+Content-Type: application/json; charset=utf-8
+Content-Length: 230
+Date: Thu, 29 Oct 2026 12:27:13 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"pay_27d2a55c-1a67-43ef-8169-686acad29bf7","orderId":"ord_demo_payable","status":"SUCCEEDED","amountCents":2598,"currency":"USD","provider":"fakepay","providerRef":"fp_charge_demo_001","createdAt":"2026-10-29T12:27:13.066Z"}
+
+$ curl -sS -i --request POST http://localhost:4010/api/tenants/ten_acme/orders/ord_demo_payable/payments -H 'Content-Type: application/json' -H 'Idempotency-Key: pay-idem-demo-001' --data-binary '{
+  "provider": "fakepay",
+  "providerRef": "fp_charge_demo_001"
+}'
+HTTP/1.1 201 Created
+X-Request-Id: b6e49a49-b5de-4519-b892-000ba7b83250
+Idempotent-Replayed: true
+Cache-Control: no-store
+Content-Type: application/json; charset=utf-8
+Content-Length: 230
+Date: Thu, 29 Oct 2026 12:27:13 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"pay_27d2a55c-1a67-43ef-8169-686acad29bf7","status":"SUCCEEDED","orderId":"ord_demo_payable","currency":"USD","provider":"fakepay","createdAt":"2026-10-29T12:27:13.066Z","amountCents":2598,"providerRef":"fp_charge_demo_001"}
+
+$ curl -sS -i --request POST http://localhost:4010/api/tenants/ten_acme/orders/ord_demo_payable/payments -H 'Content-Type: application/json' -H 'Idempotency-Key: pay-idem-demo-001' --data-binary '{
+  "provider": "fakepay",
+  "providerRef": "fp_charge_OTHER"
+}'
+HTTP/1.1 409 Conflict
+X-Request-Id: 36b17c7f-dac9-40f6-8803-8a42b8e833bf
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 275
+Date: Thu, 29 Oct 2026 12:27:13 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/idempotency_key_reused","title":"Conflict","status":409,"detail":"This Idempotency-Key was already used with a different request.","instance":"/api/tenants/ten_acme/orders/ord_demo_payable/payments","code":"idempotency_key_reused"}
+

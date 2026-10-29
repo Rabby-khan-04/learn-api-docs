@@ -1,0 +1,82 @@
+@baseUrl = http://localhost:4010
+
+### create an order with an idempotency key
+# @capture orderId = $.id
+POST {{baseUrl}}/api/tenants/ten_acme/orders
+Content-Type: application/json
+Idempotency-Key: order-idem-demo-001
+
+{
+  "customerId": "cus_acme_01",
+  "items": [
+    { "productId": "prd_tee", "quantity": 2 },
+    { "productId": "prd_mug", "quantity": 1 }
+  ]
+}
+
+### replay the exact same request: same order, replayed header
+POST {{baseUrl}}/api/tenants/ten_acme/orders
+Content-Type: application/json
+Idempotency-Key: order-idem-demo-001
+
+{
+  "customerId": "cus_acme_01",
+  "items": [
+    { "productId": "prd_tee", "quantity": 2 },
+    { "productId": "prd_mug", "quantity": 1 }
+  ]
+}
+
+### reuse the key with a different body: 409
+POST {{baseUrl}}/api/tenants/ten_acme/orders
+Content-Type: application/json
+Idempotency-Key: order-idem-demo-001
+
+{
+  "customerId": "cus_acme_01",
+  "items": [
+    { "productId": "prd_tee", "quantity": 3 }
+  ]
+}
+
+### omitting the key is a 400, before any order work starts
+POST {{baseUrl}}/api/tenants/ten_acme/orders
+Content-Type: application/json
+
+{
+  "customerId": "cus_acme_01",
+  "items": [
+    { "productId": "prd_tee", "quantity": 1 }
+  ]
+}
+
+### pay a different seeded order, also idempotently
+# @capture paymentId = $.id
+POST {{baseUrl}}/api/tenants/ten_acme/orders/ord_demo_payable/payments
+Content-Type: application/json
+Idempotency-Key: pay-idem-demo-001
+
+{
+  "provider": "fakepay",
+  "providerRef": "fp_charge_demo_001"
+}
+
+### the payment retry is replayed, not charged twice
+POST {{baseUrl}}/api/tenants/ten_acme/orders/ord_demo_payable/payments
+Content-Type: application/json
+Idempotency-Key: pay-idem-demo-001
+
+{
+  "provider": "fakepay",
+  "providerRef": "fp_charge_demo_001"
+}
+
+### same payment key, different reference: 409
+POST {{baseUrl}}/api/tenants/ten_acme/orders/ord_demo_payable/payments
+Content-Type: application/json
+Idempotency-Key: pay-idem-demo-001
+
+{
+  "provider": "fakepay",
+  "providerRef": "fp_charge_OTHER"
+}

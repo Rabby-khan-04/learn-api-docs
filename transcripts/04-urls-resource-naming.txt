@@ -1,0 +1,57 @@
+# 04-urls-resource-naming.http
+
+$ curl -sS -i --request GET http://localhost:4011/api/tenants/ten_acme/products/prd_tee
+HTTP/1.1 200 OK
+X-Request-Id: 926dfc21-7d98-4abd-b43a-2d97d50d5adf
+Content-Type: application/json; charset=utf-8
+Content-Length: 268
+Date: Thu, 29 Oct 2026 12:26:42 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"prd_tee","sku":"TEE-001","slug":"classic-tee","name":"Classic T-Shirt","description":"Heavyweight cotton tee.","priceCents":1999,"currency":"USD","stock":50,"active":true,"version":1,"createdAt":"2026-01-01T09:00:00.000Z","updatedAt":"2026-01-01T09:00:00.000Z"}
+
+$ curl -sS -i --request GET http://localhost:4011/api/tenants/ten_acme/getProducts
+HTTP/1.1 404 Not Found
+X-Request-Id: 74e4b5bc-d699-429a-b680-eb46ba1da354
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 221
+Date: Thu, 29 Oct 2026 12:26:42 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/not_found","title":"Not Found","status":404,"detail":"No route matches GET /api/tenants/ten_acme/getProducts.","instance":"/api/tenants/ten_acme/getProducts","code":"not_found"}
+
+$ curl -sS -i --request GET http://localhost:4011/api/tenants/ten_acme/customers/cus_acme_01
+HTTP/1.1 200 OK
+X-Request-Id: 388e76c1-33f7-4758-a62c-d5258e630bb5
+Content-Type: application/json; charset=utf-8
+Content-Length: 222
+Date: Thu, 29 Oct 2026 12:26:42 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"cus_acme_01","email":"alice.johnson.1@example.com","name":"Alice Johnson","status":"ACTIVE","bannedAt":null,"banReason":null,"version":1,"createdAt":"2026-01-01T09:00:00.000Z","updatedAt":"2026-01-01T09:00:00.000Z"}
+
+$ curl -sS -i --request GET http://localhost:4011/api/tenants/ten_acme/products/prd_tee/reviews/1/comments
+HTTP/1.1 404 Not Found
+X-Request-Id: cfa87a58-ffed-49a0-9a60-22aa5c4382f2
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 269
+Date: Thu, 29 Oct 2026 12:26:42 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/not_found","title":"Not Found","status":404,"detail":"No route matches GET /api/tenants/ten_acme/products/prd_tee/reviews/1/comments.","instance":"/api/tenants/ten_acme/products/prd_tee/reviews/1/comments","code":"not_found"}
+
+$ curl -sS -i --request GET http://localhost:4011/api/tenants/ten_globex/products/prd_tee
+HTTP/1.1 404 Not Found
+X-Request-Id: a6164ece-7334-4726-a922-08664226f800
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 191
+Date: Thu, 29 Oct 2026 12:26:42 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/not_found","title":"Not Found","status":404,"detail":"Product not found.","instance":"/api/tenants/ten_globex/products/prd_tee","code":"not_found"}
+

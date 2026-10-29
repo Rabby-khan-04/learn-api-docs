@@ -1,0 +1,155 @@
+# 25b-pattern-order-idempotency.http
+
+$ curl -sS -i --request POST http://localhost:4010/v1/tenants/ten_acme/orders -H 'Authorization: Bearer tok_acme_admin' -H 'Content-Type: application/json' -H 'Idempotency-Key: pattern-order-001' --data-binary '{
+  "customerId": "cus_acme_01",
+  "items": [
+    { "productId": "prd_tee", "quantity": 1 },
+    { "productId": "prd_mug", "quantity": 2 }
+  ]
+}'
+HTTP/1.1 201 Created
+X-Request-Id: 92f70081-1d62-4700-bdee-ccd914bb1d9c
+Cache-Control: no-store
+Location: /v1/tenants/ten_acme/orders/ord_53746936-286d-41de-affc-1edaaed6e303
+Content-Type: application/json; charset=utf-8
+Content-Length: 524
+Date: Thu, 29 Oct 2026 12:30:35 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"ord_53746936-286d-41de-affc-1edaaed6e303","status":"PENDING","customerId":"cus_acme_01","items":[{"productId":"prd_tee","sku":"TEE-001","name":"Classic T-Shirt","unitPriceCents":1999,"quantity":1,"lineTotalCents":1999},{"productId":"prd_mug","sku":"MUG-001","name":"Camp Mug","unitPriceCents":1299,"quantity":2,"lineTotalCents":2598}],"subtotalCents":4597,"discountCents":0,"totalCents":4597,"currency":"USD","couponCode":null,"version":1,"createdAt":"2026-10-29T12:30:35.762Z","updatedAt":"2026-10-29T12:30:35.762Z"}
+
+$ curl -sS -i --request POST http://localhost:4010/v1/tenants/ten_acme/orders -H 'Authorization: Bearer tok_acme_admin' -H 'Content-Type: application/json' -H 'Idempotency-Key: pattern-order-001' --data-binary '{
+  "customerId": "cus_acme_01",
+  "items": [
+    { "productId": "prd_tee", "quantity": 1 },
+    { "productId": "prd_mug", "quantity": 2 }
+  ]
+}'
+HTTP/1.1 201 Created
+X-Request-Id: 05dae289-dcf8-46b3-a309-55985f0aa5a5
+Idempotent-Replayed: true
+Cache-Control: no-store
+Location: /v1/tenants/ten_acme/orders/ord_53746936-286d-41de-affc-1edaaed6e303
+Content-Type: application/json; charset=utf-8
+Content-Length: 524
+Date: Thu, 29 Oct 2026 12:30:35 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"ord_53746936-286d-41de-affc-1edaaed6e303","items":[{"sku":"TEE-001","name":"Classic T-Shirt","quantity":1,"productId":"prd_tee","lineTotalCents":1999,"unitPriceCents":1999},{"sku":"MUG-001","name":"Camp Mug","quantity":2,"productId":"prd_mug","lineTotalCents":2598,"unitPriceCents":1299}],"status":"PENDING","version":1,"currency":"USD","createdAt":"2026-10-29T12:30:35.762Z","updatedAt":"2026-10-29T12:30:35.762Z","couponCode":null,"customerId":"cus_acme_01","totalCents":4597,"discountCents":0,"subtotalCents":4597}
+
+$ curl -sS -i --request POST http://localhost:4010/v1/tenants/ten_acme/orders -H 'Authorization: Bearer tok_acme_admin' -H 'Content-Type: application/json' -H 'Idempotency-Key: pattern-order-001' --data-binary '{
+  "customerId": "cus_acme_01",
+  "items": [ { "productId": "prd_tee", "quantity": 9 } ]
+}'
+HTTP/1.1 409 Conflict
+X-Request-Id: 91f3c8dc-688e-4a81-a483-03ab476036ae
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 248
+Date: Thu, 29 Oct 2026 12:30:35 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/idempotency_key_reused","title":"Conflict","status":409,"detail":"This Idempotency-Key was already used with a different request.","instance":"/v1/tenants/ten_acme/orders","code":"idempotency_key_reused"}
+
+$ curl -sS -i --request PATCH http://localhost:4010/v1/tenants/ten_acme/products/prd_tee -H 'Authorization: Bearer tok_acme_admin' -H 'Content-Type: application/json' --data-binary '{ "priceCents": 2599 }'
+HTTP/1.1 200 OK
+X-Request-Id: 5bc8d689-f565-40e0-a099-dbb81ac0d63f
+Content-Type: application/json; charset=utf-8
+Content-Length: 268
+Date: Thu, 29 Oct 2026 12:30:35 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"prd_tee","sku":"TEE-001","slug":"classic-tee","name":"Classic T-Shirt","description":"Heavyweight cotton tee.","priceCents":2599,"currency":"USD","stock":49,"active":true,"version":3,"createdAt":"2026-01-01T09:00:00.000Z","updatedAt":"2026-10-29T12:30:35.805Z"}
+
+$ curl -sS -i --request GET http://localhost:4010/v1/tenants/ten_acme/orders/ord_53746936-286d-41de-affc-1edaaed6e303 -H 'Authorization: Bearer tok_acme_admin'
+HTTP/1.1 200 OK
+X-Request-Id: 80ab6b7f-fbdd-4699-9fef-bd3ebb7f2cb8
+Content-Type: application/json; charset=utf-8
+Content-Length: 524
+Date: Thu, 29 Oct 2026 12:30:35 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"ord_53746936-286d-41de-affc-1edaaed6e303","status":"PENDING","customerId":"cus_acme_01","items":[{"productId":"prd_tee","sku":"TEE-001","name":"Classic T-Shirt","unitPriceCents":1999,"quantity":1,"lineTotalCents":1999},{"productId":"prd_mug","sku":"MUG-001","name":"Camp Mug","unitPriceCents":1299,"quantity":2,"lineTotalCents":2598}],"subtotalCents":4597,"discountCents":0,"totalCents":4597,"currency":"USD","couponCode":null,"version":1,"createdAt":"2026-10-29T12:30:35.762Z","updatedAt":"2026-10-29T12:30:35.762Z"}
+
+$ curl -sS -i --request POST http://localhost:4010/v1/tenants/ten_acme/orders -H 'Authorization: Bearer tok_acme_admin' -H 'Content-Type: application/json' -H 'Idempotency-Key: pattern-order-oos' --data-binary '{
+  "customerId": "cus_acme_01",
+  "items": [ { "productId": "prd_hoodie", "quantity": 999 } ]
+}'
+HTTP/1.1 422 Unprocessable Entity
+X-Request-Id: 0077c083-0c38-44ff-b30b-edfc133116e2
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 323
+Date: Thu, 29 Oct 2026 12:30:35 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/validation_failed","title":"Validation Failed","status":422,"detail":"One or more fields are invalid.","instance":"/v1/tenants/ten_acme/orders","code":"validation_failed","errors":[{"pointer":"/items/0/quantity","code":"too_big","message":"Too big: expected number to be <=99"}]}
+
+$ curl -sS -i --request GET http://localhost:4010/v1/tenants/ten_acme/products/prd_hoodie -H 'Authorization: Bearer tok_acme_admin'
+HTTP/1.1 200 OK
+X-Request-Id: 6857a3db-36b7-4df0-87d3-1e2c507b5882
+Content-Type: application/json; charset=utf-8
+Content-Length: 265
+Date: Thu, 29 Oct 2026 12:30:35 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"prd_hoodie","sku":"HOO-001","slug":"trail-hoodie","name":"Trail Hoodie","description":"Fleece-lined hoodie.","priceCents":4999,"currency":"USD","stock":8,"active":true,"version":1,"createdAt":"2026-01-01T11:00:00.000Z","updatedAt":"2026-10-29T12:30:35.583Z"}
+
+$ curl -sS -i --request POST http://localhost:4010/v1/tenants/ten_acme/orders -H 'Authorization: Bearer tok_acme_admin' -H 'Content-Type: application/json' -H 'Idempotency-Key: pattern-order-inactive' --data-binary '{
+  "customerId": "cus_acme_01",
+  "items": [ { "productId": "prd_cap", "quantity": 1 } ]
+}'
+HTTP/1.1 409 Conflict
+X-Request-Id: 58f4eebc-f979-4455-b6dc-a7087b515c0d
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 206
+Date: Thu, 29 Oct 2026 12:30:35 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/product_inactive","title":"Conflict","status":409,"detail":"Product prd_cap is not available.","instance":"/v1/tenants/ten_acme/orders","code":"product_inactive"}
+
+$ curl -sS -i --request POST http://localhost:4010/v1/tenants/ten_acme/orders -H 'Authorization: Bearer tok_acme_admin' -H 'Content-Type: application/json' -H 'Idempotency-Key: pattern-order-missing' --data-binary '{
+  "customerId": "cus_acme_01",
+  "items": [ { "productId": "prd_missing", "quantity": 1 } ]
+}'
+HTTP/1.1 422 Unprocessable Entity
+X-Request-Id: 4b715087-504c-4b88-b83f-f0365301ee27
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 234
+Date: Thu, 29 Oct 2026 12:30:35 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/invalid_product","title":"Unprocessable Content","status":422,"detail":"One or more products do not exist for this tenant.","instance":"/v1/tenants/ten_acme/orders","code":"invalid_product"}
+
+$ curl -sS -i --request POST http://localhost:4010/v1/tenants/ten_acme/customers/cus_acme_09/ban -H 'Authorization: Bearer tok_acme_admin' -H 'Content-Type: application/json' --data-binary '{ "reason": "Repeated chargebacks" }'
+HTTP/1.1 200 OK
+X-Request-Id: adab84c6-f645-49dc-b481-78c8f00606fe
+Content-Type: application/json; charset=utf-8
+Content-Length: 286
+Date: Thu, 29 Oct 2026 12:30:35 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"customer":{"id":"cus_acme_09","email":"ivan.petrov.9@example.com","name":"Ivan Petrov","status":"BANNED","bannedAt":"2026-10-29T12:30:35.877Z","banReason":"Repeated chargebacks","version":2,"createdAt":"2026-01-09T09:00:00.000Z","updatedAt":"2026-10-29T12:30:35.877Z"},"changed":true}
+
+$ curl -sS -i --request POST http://localhost:4010/v1/tenants/ten_acme/orders -H 'Authorization: Bearer tok_acme_admin' -H 'Content-Type: application/json' -H 'Idempotency-Key: pattern-order-banned' --data-binary '{
+  "customerId": "cus_acme_09",
+  "items": [ { "productId": "prd_mug", "quantity": 1 } ]
+}'
+HTTP/1.1 409 Conflict
+X-Request-Id: 9530a0c0-2f81-4c8e-aee7-a2e769e8a4d9
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 212
+Date: Thu, 29 Oct 2026 12:30:35 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/customer_banned","title":"Conflict","status":409,"detail":"Banned customers cannot place new orders.","instance":"/v1/tenants/ten_acme/orders","code":"customer_banned"}
+

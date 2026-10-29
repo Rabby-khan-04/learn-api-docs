@@ -1,0 +1,7 @@
+@baseUrl = http://localhost:4010
+
+### the OpenAPI document is served as JSON
+GET {{baseUrl}}/openapi.json
+
+### the local Swagger UI renders that document
+GET {{baseUrl}}/docs

@@ -1,0 +1,56 @@
+# 13b-bulk-operations.http
+
+$ curl -sS -i --request PATCH http://localhost:4010/api/tenants/ten_acme/products/bulk -H 'Content-Type: application/json' --data-binary '{
+  "updates": [
+    { "id": "prd_tee", "priceCents": 2199, "expectedVersion": 1 },
+    { "id": "prd_mug", "priceCents": 1399, "expectedVersion": 1 }
+  ]
+}'
+HTTP/1.1 200 OK
+X-Request-Id: 6966ca1c-1f08-45c3-99a8-37ddaa407621
+Content-Type: application/json; charset=utf-8
+Content-Length: 535
+Date: Thu, 29 Oct 2026 12:27:20 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"data":[{"id":"prd_mug","sku":"MUG-001","slug":"camp-mug","name":"Camp Mug","description":"Enamel mug, 350 ml.","priceCents":1399,"currency":"USD","stock":120,"active":true,"version":2,"createdAt":"2026-01-01T10:00:00.000Z","updatedAt":"2026-10-29T12:27:20.847Z"},{"id":"prd_tee","sku":"TEE-001","slug":"classic-tee","name":"Classic T-Shirt","description":"Heavyweight cotton tee.","priceCents":2199,"currency":"USD","stock":50,"active":true,"version":2,"createdAt":"2026-01-01T09:00:00.000Z","updatedAt":"2026-10-29T12:27:20.846Z"}]}
+
+$ curl -sS -i --request PATCH http://localhost:4010/api/tenants/ten_acme/products/bulk -H 'Content-Type: application/json' --data-binary '{
+  "updates": [
+    { "id": "prd_tee", "priceCents": 2299, "expectedVersion": 99 },
+    { "id": "prd_missing", "priceCents": 100 }
+  ]
+}'
+HTTP/1.1 422 Unprocessable Entity
+X-Request-Id: 93c69e39-c950-4330-8776-901aeb23aa38
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 444
+Date: Thu, 29 Oct 2026 12:27:20 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/bulk_update_failed","title":"Validation Failed","status":422,"detail":"No products were changed because some updates failed.","instance":"/api/tenants/ten_acme/products/bulk","code":"bulk_update_failed","errors":[{"pointer":"/updates","code":"version_mismatch","message":"prd_tee: Expected version 99, found 2."},{"pointer":"/updates","code":"not_found","message":"prd_missing: Product not found."}]}
+
+$ curl -sS -i --request GET http://localhost:4010/api/tenants/ten_acme/products/prd_tee
+HTTP/1.1 200 OK
+X-Request-Id: 2069cb96-1f09-422c-b985-c59175138056
+Content-Type: application/json; charset=utf-8
+Content-Length: 268
+Date: Thu, 29 Oct 2026 12:27:20 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"prd_tee","sku":"TEE-001","slug":"classic-tee","name":"Classic T-Shirt","description":"Heavyweight cotton tee.","priceCents":2199,"currency":"USD","stock":50,"active":true,"version":2,"createdAt":"2026-01-01T09:00:00.000Z","updatedAt":"2026-10-29T12:27:20.846Z"}
+
+$ curl -sS -i --request PATCH http://localhost:4010/api/tenants/ten_acme/products/bulk -H 'Content-Type: application/json' --data-binary '{ "updates": [] }'
+HTTP/1.1 422 Unprocessable Entity
+X-Request-Id: 1eaf7f9c-bdd5-4ac8-840a-a6de67e5fe56
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 332
+Date: Thu, 29 Oct 2026 12:27:20 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/validation_failed","title":"Validation Failed","status":422,"detail":"One or more fields are invalid.","instance":"/api/tenants/ten_acme/products/bulk","code":"validation_failed","errors":[{"pointer":"/updates","code":"too_small","message":"Too small: expected array to have >=1 items"}]}
+

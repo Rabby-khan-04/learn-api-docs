@@ -1,0 +1,82 @@
+# 18-long-running-operations.http
+
+$ curl -sS -i --request POST http://localhost:4010/v1/tenants/ten_acme/exports -H 'Authorization: Bearer tok_acme_admin'
+HTTP/1.1 202 Accepted
+X-Request-Id: 3092d2fe-1eba-4314-8e4b-9e8e8c628f62
+Cache-Control: no-store
+Retry-After: 1
+Location: /v1/tenants/ten_acme/exports/op_3812a095-8c14-46a4-b2f6-07493cbc15ae
+Content-Type: application/json; charset=utf-8
+Content-Length: 298
+Date: Thu, 29 Oct 2026 12:28:51 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"operation":{"id":"op_3812a095-8c14-46a4-b2f6-07493cbc15ae","type":"products_csv","status":"QUEUED","resultUrl":null,"error":null,"createdAt":"2026-10-29T12:28:51.610Z","updatedAt":"2026-10-29T12:28:51.610Z"},"links":{"self":"/v1/tenants/ten_acme/exports/op_3812a095-8c14-46a4-b2f6-07493cbc15ae"}}
+
+$ curl -sS -i --request GET http://localhost:4010/v1/tenants/ten_acme/exports/op_3812a095-8c14-46a4-b2f6-07493cbc15ae -H 'Authorization: Bearer tok_acme_admin'
+HTTP/1.1 200 OK
+X-Request-Id: 5c131b0a-7852-4c2a-be09-8a7b315ce4cf
+Cache-Control: no-store
+Retry-After: 1
+Content-Type: application/json; charset=utf-8
+Content-Length: 196
+Date: Thu, 29 Oct 2026 12:28:51 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"op_3812a095-8c14-46a4-b2f6-07493cbc15ae","type":"products_csv","status":"QUEUED","resultUrl":null,"error":null,"createdAt":"2026-10-29T12:28:51.610Z","updatedAt":"2026-10-29T12:28:51.610Z"}
+
+$ curl -sS -i --request GET http://localhost:4010/v1/tenants/ten_acme/exports/op_3812a095-8c14-46a4-b2f6-07493cbc15ae/result -H 'Authorization: Bearer tok_acme_admin'
+HTTP/1.1 409 Conflict
+X-Request-Id: ee80ff58-6b59-4cf5-8ce9-3a6edd44c4c6
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 319
+Date: Thu, 29 Oct 2026 12:28:51 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/operation_not_complete","title":"Conflict","status":409,"detail":"The export is queued. Poll the operation until it succeeds.","instance":"/v1/tenants/ten_acme/exports/op_3812a095-8c14-46a4-b2f6-07493cbc15ae/result","code":"operation_not_complete","operationStatus":"QUEUED"}
+
+# wait 1500 ms
+
+$ curl -sS -i --request GET http://localhost:4010/v1/tenants/ten_acme/exports/op_3812a095-8c14-46a4-b2f6-07493cbc15ae -H 'Authorization: Bearer tok_acme_admin'
+HTTP/1.1 200 OK
+X-Request-Id: a13201a5-9cd5-4fa9-8bcd-f28284a2f431
+Cache-Control: no-store
+Content-Type: application/json; charset=utf-8
+Content-Length: 272
+Date: Thu, 29 Oct 2026 12:28:53 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"op_3812a095-8c14-46a4-b2f6-07493cbc15ae","type":"products_csv","status":"SUCCEEDED","resultUrl":"/v1/tenants/ten_acme/exports/op_3812a095-8c14-46a4-b2f6-07493cbc15ae/result","error":null,"createdAt":"2026-10-29T12:28:51.610Z","updatedAt":"2026-10-29T12:28:52.823Z"}
+
+$ curl -sS -i --request GET http://localhost:4010/v1/tenants/ten_acme/exports/op_3812a095-8c14-46a4-b2f6-07493cbc15ae/result -H 'Authorization: Bearer tok_acme_admin'
+HTTP/1.1 200 OK
+X-Request-Id: 8c77bb72-6d9f-47d0-a19c-680b75ce4bf1
+Content-Type: text/csv; charset=utf-8
+Content-Disposition: attachment; filename="products-op_3812a095-8c14-46a4-b2f6-07493cbc15ae.csv"
+Cache-Control: private, no-store
+Content-Length: 407
+Date: Thu, 29 Oct 2026 12:28:53 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+id,sku,slug,name,priceCents,currency,stock,active,version,createdAt
+prd_tee,TEE-001,classic-tee,Classic T-Shirt,1999,USD,50,true,1,2026-01-01T09:00:00.000Z
+prd_mug,MUG-001,camp-mug,Camp Mug,1299,USD,120,true,1,2026-01-01T10:00:00.000Z
+prd_hoodie,HOO-001,trail-hoodie,Trail Hoodie,4999,USD,8,true,1,2026-01-01T11:00:00.000Z
+prd_cap,CAP-001,running-cap,Running Cap,2499,USD,0,false,1,2026-01-01T12:00:00.000Z
+
+$ curl -sS -i --request GET http://localhost:4010/v1/tenants/ten_globex/exports/op_3812a095-8c14-46a4-b2f6-07493cbc15ae -H 'Authorization: Bearer tok_acme_admin'
+HTTP/1.1 403 Forbidden
+X-Request-Id: e4e8c793-11a0-470f-89ae-f38c9f3c084d
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 251
+Date: Thu, 29 Oct 2026 12:28:53 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/forbidden","title":"Forbidden","status":403,"detail":"This token is not allowed to access that tenant.","instance":"/v1/tenants/ten_globex/exports/op_3812a095-8c14-46a4-b2f6-07493cbc15ae","code":"forbidden"}
+

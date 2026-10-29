@@ -1,0 +1,19 @@
+@baseUrl = http://localhost:4011
+
+### search across name, SKU, and slug
+GET {{baseUrl}}/api/tenants/ten_acme/products?q=tee
+
+### search is case-insensitive
+GET {{baseUrl}}/api/tenants/ten_acme/products?q=MUG
+
+### ask for only the fields you render
+GET {{baseUrl}}/api/tenants/ten_acme/products?fields=name,priceCents&limit=3
+
+### id is always included, even if you do not ask for it
+GET {{baseUrl}}/api/tenants/ten_acme/products?fields=name&limit=1
+
+### unknown fields cannot silently disappear
+GET {{baseUrl}}/api/tenants/ten_acme/products?fields=name,passwordHash
+
+### a search that matches nothing is still 200
+GET {{baseUrl}}/api/tenants/ten_acme/products?q=zzzz

@@ -1,0 +1,58 @@
+@baseUrl = http://localhost:4010
+@token = tok_acme_admin
+
+### ban a customer with an audit reason
+POST {{baseUrl}}/v1/tenants/ten_acme/customers/cus_acme_12/ban
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "reason": "Chargeback abuse" }
+
+### repeating the ban is a safe no-op, not a duplicate event
+POST {{baseUrl}}/v1/tenants/ten_acme/customers/cus_acme_12/ban
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "reason": "Chargeback abuse" }
+
+### unban
+POST {{baseUrl}}/v1/tenants/ten_acme/customers/cus_acme_12/unban
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "reason": "Appeal accepted" }
+
+### repeating the unban is also a no-op
+POST {{baseUrl}}/v1/tenants/ten_acme/customers/cus_acme_12/unban
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "reason": "Appeal accepted" }
+
+### a reason is mandatory
+POST {{baseUrl}}/v1/tenants/ten_acme/customers/cus_acme_12/ban
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{}
+
+### support staff may ban
+POST {{baseUrl}}/v1/tenants/ten_acme/customers/cus_acme_13/ban
+Authorization: Bearer tok_acme_support
+Content-Type: application/json
+
+{ "reason": "Suspicious refund pattern" }
+
+### an Acme token cannot ban a Globex customer
+POST {{baseUrl}}/v1/tenants/ten_globex/customers/cus_globex_01/ban
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "reason": "Cross-tenant attempt" }
+
+### a platform admin can
+POST {{baseUrl}}/v1/tenants/ten_globex/customers/cus_globex_01/ban
+Authorization: Bearer tok_platform
+Content-Type: application/json
+
+{ "reason": "Platform-level fraud review" }

@@ -1,0 +1,71 @@
+@baseUrl = http://localhost:4011
+@token = tok_acme_admin
+
+### 200 OK: a successful read
+GET {{baseUrl}}/api/tenants/ten_acme/products/prd_tee
+Authorization: Bearer {{token}}
+
+### 201 Created: a new resource, with Location
+# @capture createdId = $.id
+POST {{baseUrl}}/api/tenants/ten_acme/products
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "sku": "SOC-001",
+  "slug": "trail-socks",
+  "name": "Trail Socks",
+  "priceCents": 999,
+  "currency": "USD",
+  "stock": 40
+}
+
+### 204 No Content: success with nothing to say
+DELETE {{baseUrl}}/api/tenants/ten_acme/products/{{createdId}}
+Authorization: Bearer {{token}}
+
+### 400 Bad Request: the JSON itself is broken
+POST {{baseUrl}}/api/tenants/ten_acme/products
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{"sku": "BAD-001",
+
+### 404 Not Found: no such resource in this tenant
+GET {{baseUrl}}/api/tenants/ten_acme/products/prd_missing
+Authorization: Bearer {{token}}
+
+### 409 Conflict: the SKU already exists
+POST {{baseUrl}}/api/tenants/ten_acme/products
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "sku": "TEE-001",
+  "slug": "another-tee",
+  "name": "Another Tee",
+  "priceCents": 1999,
+  "currency": "USD",
+  "stock": 5
+}
+
+### 422 Unprocessable Content: parsed, but the values are wrong
+POST {{baseUrl}}/api/tenants/ten_acme/products
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "sku": "HAT-001",
+  "slug": "sun-hat",
+  "name": "Sun Hat",
+  "priceCents": 1500,
+  "currency": "usd",
+  "stock": 10
+}
+
+### 401 Unauthorized: no credentials at all
+GET {{baseUrl}}/api/tenants/ten_acme/products/prd_tee
+
+### 403 Forbidden: authenticated, but not for this tenant
+GET {{baseUrl}}/api/tenants/ten_globex/products
+Authorization: Bearer {{token}}

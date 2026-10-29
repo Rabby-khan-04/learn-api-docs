@@ -1,0 +1,10 @@
+@baseUrl = http://localhost:4011
+
+### health: the process is up
+GET {{baseUrl}}/health
+
+### read the Acme catalog
+GET {{baseUrl}}/api/tenants/ten_acme/products?limit=3
+
+### read one product by its resource URL
+GET {{baseUrl}}/api/tenants/ten_acme/products/prd_tee

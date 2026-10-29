@@ -1,0 +1,129 @@
+# 25a-pattern-products-crud.http
+
+$ curl -sS -i --request POST http://localhost:4010/v1/tenants/ten_acme/products -H 'Authorization: Bearer tok_acme_admin' -H 'Content-Type: application/json' --data-binary '{
+  "sku": "GLOV-001",
+  "slug": "trail-gloves",
+  "name": "Trail Gloves",
+  "description": "Windproof gloves.",
+  "priceCents": 2999,
+  "currency": "USD",
+  "stock": 20
+}'
+HTTP/1.1 201 Created
+X-Request-Id: dc437e0e-6db0-42e5-baa5-308f016581a7
+Location: /v1/tenants/ten_acme/products/prd_f4de0e44-5b6f-407a-96f5-f16d28b28640
+Content-Type: application/json; charset=utf-8
+Content-Length: 294
+Date: Thu, 29 Oct 2026 12:30:02 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"prd_f4de0e44-5b6f-407a-96f5-f16d28b28640","sku":"GLOV-001","slug":"trail-gloves","name":"Trail Gloves","description":"Windproof gloves.","priceCents":2999,"currency":"USD","stock":20,"active":true,"version":1,"createdAt":"2026-10-29T12:30:02.785Z","updatedAt":"2026-10-29T12:30:02.785Z"}
+
+$ curl -sS -i --request GET http://localhost:4010/v1/tenants/ten_acme/products/prd_f4de0e44-5b6f-407a-96f5-f16d28b28640 -H 'Authorization: Bearer tok_acme_admin'
+HTTP/1.1 200 OK
+X-Request-Id: 695f07d0-0ffd-4118-a629-1118ce22447a
+Content-Type: application/json; charset=utf-8
+Content-Length: 294
+Date: Thu, 29 Oct 2026 12:30:02 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"prd_f4de0e44-5b6f-407a-96f5-f16d28b28640","sku":"GLOV-001","slug":"trail-gloves","name":"Trail Gloves","description":"Windproof gloves.","priceCents":2999,"currency":"USD","stock":20,"active":true,"version":1,"createdAt":"2026-10-29T12:30:02.785Z","updatedAt":"2026-10-29T12:30:02.785Z"}
+
+$ curl -sS -i --request PATCH http://localhost:4010/v1/tenants/ten_acme/products/prd_f4de0e44-5b6f-407a-96f5-f16d28b28640 -H 'Authorization: Bearer tok_acme_admin' -H 'Content-Type: application/json' --data-binary '{ "name": "Trail Gloves (2026)" }'
+HTTP/1.1 200 OK
+X-Request-Id: 0523d550-8eb2-4c31-aa31-e4521492abe3
+Content-Type: application/json; charset=utf-8
+Content-Length: 301
+Date: Thu, 29 Oct 2026 12:30:02 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"prd_f4de0e44-5b6f-407a-96f5-f16d28b28640","sku":"GLOV-001","slug":"trail-gloves","name":"Trail Gloves (2026)","description":"Windproof gloves.","priceCents":2999,"currency":"USD","stock":20,"active":true,"version":2,"createdAt":"2026-10-29T12:30:02.785Z","updatedAt":"2026-10-29T12:30:02.809Z"}
+
+$ curl -sS -i --request POST http://localhost:4010/v1/tenants/ten_acme/products -H 'Authorization: Bearer tok_acme_admin' -H 'Content-Type: application/json' --data-binary '{
+  "sku": "GLOV-001",
+  "slug": "gloves-two",
+  "name": "Gloves Two",
+  "priceCents": 2999,
+  "currency": "USD",
+  "stock": 5
+}'
+HTTP/1.1 409 Conflict
+X-Request-Id: e8cdac1f-27f5-4ba4-82ea-e86647372ef0
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 209
+Date: Thu, 29 Oct 2026 12:30:02 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/sku_taken","title":"Conflict","status":409,"detail":"That SKU or slug already exists for this tenant.","instance":"/v1/tenants/ten_acme/products","code":"sku_taken"}
+
+$ curl -sS -i --request POST http://localhost:4010/v1/tenants/ten_globex/products -H 'Authorization: Bearer tok_globex_admin' -H 'Content-Type: application/json' --data-binary '{
+  "sku": "GLOV-001",
+  "slug": "globex-gloves",
+  "name": "Globex Gloves",
+  "priceCents": 2799,
+  "currency": "EUR",
+  "stock": 5
+}'
+HTTP/1.1 201 Created
+X-Request-Id: 4570e92f-d780-4602-b24d-a646d5001216
+Location: /v1/tenants/ten_globex/products/prd_3ea85111-2f71-4299-a0d2-62cc5baf48e6
+Content-Type: application/json; charset=utf-8
+Content-Length: 280
+Date: Thu, 29 Oct 2026 12:30:02 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"prd_3ea85111-2f71-4299-a0d2-62cc5baf48e6","sku":"GLOV-001","slug":"globex-gloves","name":"Globex Gloves","description":null,"priceCents":2799,"currency":"EUR","stock":5,"active":true,"version":1,"createdAt":"2026-10-29T12:30:02.870Z","updatedAt":"2026-10-29T12:30:02.870Z"}
+
+$ curl -sS -i --request GET http://localhost:4010/v1/tenants/ten_globex/products/prd_f4de0e44-5b6f-407a-96f5-f16d28b28640 -H 'Authorization: Bearer tok_globex_admin'
+HTTP/1.1 404 Not Found
+X-Request-Id: 2e26a5d6-7c7b-4e16-b129-1c0e75a5ce7b
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 223
+Date: Thu, 29 Oct 2026 12:30:02 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/not_found","title":"Not Found","status":404,"detail":"Product not found.","instance":"/v1/tenants/ten_globex/products/prd_f4de0e44-5b6f-407a-96f5-f16d28b28640","code":"not_found"}
+
+$ curl -sS -i --request DELETE http://localhost:4010/v1/tenants/ten_acme/products/prd_f4de0e44-5b6f-407a-96f5-f16d28b28640 -H 'Authorization: Bearer tok_acme_admin'
+HTTP/1.1 204 No Content
+X-Request-Id: 0d9dde14-e3d3-4c2c-a79f-c960cceb9a92
+Date: Thu, 29 Oct 2026 12:30:02 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+
+$ curl -sS -i --request GET http://localhost:4010/v1/tenants/ten_acme/products/prd_f4de0e44-5b6f-407a-96f5-f16d28b28640 -H 'Authorization: Bearer tok_acme_admin'
+HTTP/1.1 404 Not Found
+X-Request-Id: 816f292f-6823-45ee-bf6f-581014db836d
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 221
+Date: Thu, 29 Oct 2026 12:30:02 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/not_found","title":"Not Found","status":404,"detail":"Product not found.","instance":"/v1/tenants/ten_acme/products/prd_f4de0e44-5b6f-407a-96f5-f16d28b28640","code":"not_found"}
+
+$ curl -sS -i --request POST http://localhost:4010/v1/tenants/ten_acme/products -H 'Authorization: Bearer tok_acme_admin' -H 'Content-Type: application/json' --data-binary '{
+  "sku": "GLOV-001",
+  "slug": "gloves-again",
+  "name": "Gloves Again",
+  "priceCents": 2999,
+  "currency": "USD",
+  "stock": 5
+}'
+HTTP/1.1 409 Conflict
+X-Request-Id: 9c54b0c2-9055-4703-880c-ab1d6d864f9d
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 209
+Date: Thu, 29 Oct 2026 12:30:02 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/sku_taken","title":"Conflict","status":409,"detail":"That SKU or slug already exists for this tenant.","instance":"/v1/tenants/ten_acme/products","code":"sku_taken"}
+

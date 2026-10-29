@@ -1,0 +1,25 @@
+@baseUrl = http://localhost:4011
+
+### a product representation: camelCase, minor units, ISO 8601 UTC
+GET {{baseUrl}}/api/tenants/ten_acme/products/prd_tee
+
+### omitted optional description becomes an explicit null
+# @capture createdId = $.id
+POST {{baseUrl}}/api/tenants/ten_acme/products
+Content-Type: application/json
+
+{
+  "sku": "BTL-001",
+  "slug": "water-bottle",
+  "name": "Water Bottle",
+  "priceCents": 2499,
+  "currency": "USD",
+  "stock": 25,
+  "active": true
+}
+
+### a customer: derived status, nullable ban fields
+GET {{baseUrl}}/api/tenants/ten_acme/customers/cus_acme_01
+
+### the envelope tells you what the array is
+GET {{baseUrl}}/api/tenants/ten_acme/products?limit=1

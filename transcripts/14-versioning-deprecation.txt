@@ -1,0 +1,52 @@
+# 14-versioning-deprecation.http
+
+$ curl -sS -i --request GET http://localhost:4010/api/tenants/ten_acme/products/prd_tee
+HTTP/1.1 200 OK
+X-Request-Id: 579e4aa5-7beb-443b-a900-a336cf5f9dcb
+Deprecation: @1798761599
+Sunset: Thu, 31 Dec 2026 23:59:59 GMT
+Link: <http://localhost:4010/openapi.json>; rel="deprecation"; type="application/json"
+Content-Type: application/json; charset=utf-8
+Content-Length: 268
+Date: Thu, 29 Oct 2026 12:27:32 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"prd_tee","sku":"TEE-001","slug":"classic-tee","name":"Classic T-Shirt","description":"Heavyweight cotton tee.","priceCents":2199,"currency":"USD","stock":45,"active":true,"version":3,"createdAt":"2026-01-01T09:00:00.000Z","updatedAt":"2026-10-29T12:27:25.073Z"}
+
+$ curl -sS -i --request GET http://localhost:4010/v1/tenants/ten_acme/products/prd_tee
+HTTP/1.1 200 OK
+X-Request-Id: 30c3f4f2-968f-447c-9f99-9084369bcfe3
+Content-Type: application/json; charset=utf-8
+Content-Length: 268
+Date: Thu, 29 Oct 2026 12:27:32 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"prd_tee","sku":"TEE-001","slug":"classic-tee","name":"Classic T-Shirt","description":"Heavyweight cotton tee.","priceCents":2199,"currency":"USD","stock":45,"active":true,"version":3,"createdAt":"2026-01-01T09:00:00.000Z","updatedAt":"2026-10-29T12:27:25.073Z"}
+
+$ curl -sS -i --request GET http://localhost:4010/api/tenants/ten_acme/products\?limit=1\&fields=id,name
+HTTP/1.1 200 OK
+X-Request-Id: d8b15fc0-e54f-4eee-902d-5e4a84875a3b
+Deprecation: @1798761599
+Sunset: Thu, 31 Dec 2026 23:59:59 GMT
+Link: <http://localhost:4010/openapi.json>; rel="deprecation"; type="application/json"
+Content-Type: application/json; charset=utf-8
+Content-Length: 178
+Date: Thu, 29 Oct 2026 12:27:32 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"data":[{"id":"prd_cap","name":"Running Cap"}],"pagination":{"limit":1,"hasMore":true,"nextCursor":"eyJjcmVhdGVkQXQiOiIyMDI2LTAxLTAxVDEyOjAwOjAwLjAwMFoiLCJpZCI6InByZF9jYXAifQ"}}
+
+$ curl -sS -i --request GET http://localhost:4010/v2/tenants/ten_acme/products
+HTTP/1.1 404 Not Found
+X-Request-Id: 4874e8f8-edcb-4172-8a5b-31731394f420
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 213
+Date: Thu, 29 Oct 2026 12:27:32 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/not_found","title":"Not Found","status":404,"detail":"No route matches GET /v2/tenants/ten_acme/products.","instance":"/v2/tenants/ten_acme/products","code":"not_found"}
+

@@ -1,0 +1,56 @@
+@baseUrl = http://localhost:4010
+
+### start from the current full representation
+GET {{baseUrl}}/api/tenants/ten_acme/products/prd_tee
+
+### PUT replaces the whole product
+PUT {{baseUrl}}/api/tenants/ten_acme/products/prd_tee
+Content-Type: application/json
+
+{
+  "sku": "TEE-001",
+  "slug": "classic-tee",
+  "name": "Classic T-Shirt (2026)",
+  "description": "New heavyweight cotton tee.",
+  "priceCents": 2199,
+  "currency": "USD",
+  "stock": 50,
+  "active": true
+}
+
+### PATCH changes one field and leaves the rest alone
+PATCH {{baseUrl}}/api/tenants/ten_acme/products/prd_tee
+Content-Type: application/json
+
+{ "priceCents": 2299 }
+
+### PATCH can set description back to null
+PATCH {{baseUrl}}/api/tenants/ten_acme/products/prd_tee
+Content-Type: application/json
+
+{ "description": null }
+
+### unknown fields are not silently ignored
+PATCH {{baseUrl}}/api/tenants/ten_acme/products/prd_tee
+Content-Type: application/json
+
+{ "priceCents": 1999, "costCents": 700 }
+
+### PUT is a replacement: a missing required field fails
+PUT {{baseUrl}}/api/tenants/ten_acme/products/prd_mug
+Content-Type: application/json
+
+{
+  "sku": "MUG-001",
+  "slug": "camp-mug",
+  "name": "Camp Mug",
+  "priceCents": 1299,
+  "currency": "USD",
+  "active": true
+}
+
+### an empty PATCH is rejected
+PATCH {{baseUrl}}/api/tenants/ten_acme/products/prd_mug
+Content-Type: application/json
+
+{}

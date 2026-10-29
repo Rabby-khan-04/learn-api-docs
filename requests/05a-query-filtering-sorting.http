@@ -1,0 +1,25 @@
+@baseUrl = http://localhost:4011
+
+### only products that are on sale
+GET {{baseUrl}}/api/tenants/ten_acme/products?active=true
+
+### price range filter
+GET {{baseUrl}}/api/tenants/ten_acme/products?minPriceCents=1500&maxPriceCents=5000
+
+### sort by name, ascending
+GET {{baseUrl}}/api/tenants/ten_acme/products?sort=name
+
+### sort by price, descending
+GET {{baseUrl}}/api/tenants/ten_acme/products?sort=-priceCents
+
+### an unknown sort value is rejected
+GET {{baseUrl}}/api/tenants/ten_acme/products?sort=cheapest
+
+### unknown query parameters are rejected, not ignored
+GET {{baseUrl}}/api/tenants/ten_acme/products?tenant=ten_globex
+
+### an impossible range is a validation error
+GET {{baseUrl}}/api/tenants/ten_acme/products?minPriceCents=5000&maxPriceCents=1000
+
+### a valid filter that matches nothing
+GET {{baseUrl}}/api/tenants/ten_acme/products?maxPriceCents=100

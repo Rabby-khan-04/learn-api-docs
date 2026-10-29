@@ -1,0 +1,83 @@
+@baseUrl = http://localhost:4010
+@token = tok_acme_admin
+
+### create a product in Acme
+# @capture productId = $.id
+POST {{baseUrl}}/v1/tenants/ten_acme/products
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "sku": "GLOV-001",
+  "slug": "trail-gloves",
+  "name": "Trail Gloves",
+  "description": "Windproof gloves.",
+  "priceCents": 2999,
+  "currency": "USD",
+  "stock": 20
+}
+
+### read it back by resource URL
+GET {{baseUrl}}/v1/tenants/ten_acme/products/{{productId}}
+Authorization: Bearer {{token}}
+
+### patch one field
+PATCH {{baseUrl}}/v1/tenants/ten_acme/products/{{productId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "name": "Trail Gloves (2026)" }
+
+### the SKU is unique inside Acme
+POST {{baseUrl}}/v1/tenants/ten_acme/products
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "sku": "GLOV-001",
+  "slug": "gloves-two",
+  "name": "Gloves Two",
+  "priceCents": 2999,
+  "currency": "USD",
+  "stock": 5
+}
+
+### but the same SKU is fine in another tenant
+POST {{baseUrl}}/v1/tenants/ten_globex/products
+Authorization: Bearer tok_globex_admin
+Content-Type: application/json
+
+{
+  "sku": "GLOV-001",
+  "slug": "globex-gloves",
+  "name": "Globex Gloves",
+  "priceCents": 2799,
+  "currency": "EUR",
+  "stock": 5
+}
+
+### a Globex token cannot read the Acme product via a Globex URL
+GET {{baseUrl}}/v1/tenants/ten_globex/products/{{productId}}
+Authorization: Bearer tok_globex_admin
+
+### soft delete
+DELETE {{baseUrl}}/v1/tenants/ten_acme/products/{{productId}}
+Authorization: Bearer {{token}}
+
+### the deleted product is gone from reads
+GET {{baseUrl}}/v1/tenants/ten_acme/products/{{productId}}
+Authorization: Bearer {{token}}
+
+### a soft-deleted row still owns its SKU, so reuse conflicts
+POST {{baseUrl}}/v1/tenants/ten_acme/products
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "sku": "GLOV-001",
+  "slug": "gloves-again",
+  "name": "Gloves Again",
+  "priceCents": 2999,
+  "currency": "USD",
+  "stock": 5
+}

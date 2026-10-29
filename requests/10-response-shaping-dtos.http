@@ -1,0 +1,27 @@
+@baseUrl = http://localhost:4011
+
+### the list and the item use the same Product DTO
+GET {{baseUrl}}/api/tenants/ten_acme/products?limit=1
+
+### the item form of the same record
+GET {{baseUrl}}/api/tenants/ten_acme/products/prd_tee
+
+### a created product never exposes tenantId, deletedAt, or storage keys
+# @capture createdId = $.id
+POST {{baseUrl}}/api/tenants/ten_acme/products
+Content-Type: application/json
+
+{
+  "sku": "LMP-001",
+  "slug": "camp-lamp",
+  "name": "Camp Lamp",
+  "priceCents": 3499,
+  "currency": "USD",
+  "stock": 12
+}
+
+### customer DTO derives status instead of exposing bannedAt logic
+GET {{baseUrl}}/api/tenants/ten_acme/customers/cus_acme_01
+
+### field selection is applied after the DTO is built
+GET {{baseUrl}}/api/tenants/ten_acme/products/{{createdId}}?fields=id,name,priceCents

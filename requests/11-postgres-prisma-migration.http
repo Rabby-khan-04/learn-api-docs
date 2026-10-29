@@ -1,0 +1,17 @@
+@baseUrl = http://localhost:4010
+@token = tok_acme_admin
+
+### the API is healthy after the Prisma cutover
+GET {{baseUrl}}/health
+
+### the same product list, now backed by PostgreSQL
+GET {{baseUrl}}/api/tenants/ten_acme/products?limit=2&sort=createdAt
+
+### customers are stored in real rows with a tenant column
+GET {{baseUrl}}/api/tenants/ten_acme/customers?limit=2&sort=createdAt
+
+### a seeded order with a fixed ID
+GET {{baseUrl}}/api/tenants/ten_acme/orders/ord_demo_pending
+
+### a tenant cannot see another tenant's order
+GET {{baseUrl}}/api/tenants/ten_globex/orders/ord_demo_pending

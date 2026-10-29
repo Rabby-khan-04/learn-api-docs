@@ -1,0 +1,40 @@
+@baseUrl = http://localhost:4010
+@token = tok_acme_admin
+
+### the seeded endpoint, with the secret deliberately absent
+GET {{baseUrl}}/v1/tenants/ten_acme/webhook-endpoints
+Authorization: Bearer {{token}}
+
+### register a second endpoint that points at a dead port
+# @capture endpointId = $.id
+POST {{baseUrl}}/v1/tenants/ten_acme/webhook-endpoints
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "url": "http://localhost:4099/hooks/dead" }
+
+### creating an order emits order.created to every active endpoint
+# @capture orderId = $.id
+POST {{baseUrl}}/v1/tenants/ten_acme/orders
+Authorization: Bearer {{token}}
+Content-Type: application/json
+Idempotency-Key: webhook-demo-001
+
+{
+  "customerId": "cus_acme_08",
+  "items": [ { "productId": "prd_mug", "quantity": 1 } ]
+}
+
+### the healthy endpoint recorded a delivered event
+# @wait 800
+GET {{baseUrl}}/v1/tenants/ten_acme/webhook-endpoints/wh_acme/deliveries
+Authorization: Bearer {{token}}
+
+### the dead endpoint retried three times and failed
+# @wait 2500
+GET {{baseUrl}}/v1/tenants/ten_acme/webhook-endpoints/{{endpointId}}/deliveries
+Authorization: Bearer {{token}}
+
+### another tenant cannot inspect Acme deliveries
+GET {{baseUrl}}/v1/tenants/ten_globex/webhook-endpoints/wh_acme/deliveries
+Authorization: Bearer {{token}}

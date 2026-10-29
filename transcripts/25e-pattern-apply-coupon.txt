@@ -1,0 +1,123 @@
+# 25e-pattern-apply-coupon.http
+
+$ curl -sS -i --request POST http://localhost:4010/v1/tenants/ten_acme/orders/ord_demo_pending/coupon -H 'Authorization: Bearer tok_acme_admin' -H 'Content-Type: application/json' --data-binary '{ "code": "EXPIRED10" }'
+HTTP/1.1 422 Unprocessable Entity
+X-Request-Id: f12732b4-3f90-42c8-a5ea-e6211801d68e
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 249
+Date: Thu, 29 Oct 2026 12:30:36 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/invalid_coupon","title":"Unprocessable Content","status":422,"detail":"The coupon cannot be applied to this order.","instance":"/v1/tenants/ten_acme/orders/ord_demo_pending/coupon","code":"invalid_coupon"}
+
+$ curl -sS -i --request POST http://localhost:4010/v1/tenants/ten_acme/orders/ord_demo_pending/coupon -H 'Authorization: Bearer tok_acme_admin' -H 'Content-Type: application/json' --data-binary '{ "code": "EU10" }'
+HTTP/1.1 422 Unprocessable Entity
+X-Request-Id: a30f67db-f72c-4448-a51f-f35196242a32
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 249
+Date: Thu, 29 Oct 2026 12:30:36 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/invalid_coupon","title":"Unprocessable Content","status":422,"detail":"The coupon cannot be applied to this order.","instance":"/v1/tenants/ten_acme/orders/ord_demo_pending/coupon","code":"invalid_coupon"}
+
+$ curl -sS -i --request POST http://localhost:4010/v1/tenants/ten_acme/orders/ord_demo_pending/coupon -H 'Authorization: Bearer tok_acme_admin' -H 'Content-Type: application/json' --data-binary '{ "code": "save10" }'
+HTTP/1.1 200 OK
+X-Request-Id: 33e556e4-97fe-497a-9a00-b247f6f38cc5
+Content-Type: application/json; charset=utf-8
+Content-Length: 391
+Date: Thu, 29 Oct 2026 12:30:36 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"ord_demo_pending","status":"PENDING","customerId":"cus_acme_03","items":[{"productId":"prd_hoodie","sku":"HOO-001","name":"Trail Hoodie","unitPriceCents":4999,"quantity":1,"lineTotalCents":4999}],"subtotalCents":4999,"discountCents":500,"totalCents":4499,"currency":"USD","couponCode":"SAVE10","version":2,"createdAt":"2026-01-20T09:00:00.000Z","updatedAt":"2026-10-29T12:30:36.725Z"}
+
+$ curl -sS -i --request POST http://localhost:4010/v1/tenants/ten_acme/orders/ord_demo_pending/coupon -H 'Authorization: Bearer tok_acme_admin' -H 'Content-Type: application/json' --data-binary '{ "code": "SAVE10" }'
+HTTP/1.1 409 Conflict
+X-Request-Id: fbaf75ba-90e2-4037-bee0-c41a4d870610
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 241
+Date: Thu, 29 Oct 2026 12:30:36 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/coupon_already_applied","title":"Conflict","status":409,"detail":"This order already has a coupon.","instance":"/v1/tenants/ten_acme/orders/ord_demo_pending/coupon","code":"coupon_already_applied"}
+
+$ curl -sS -i --request POST http://localhost:4010/v1/tenants/ten_acme/orders -H 'Authorization: Bearer tok_acme_admin' -H 'Content-Type: application/json' -H 'Idempotency-Key: coupon-max1-order-a' --data-binary '{
+  "customerId": "cus_acme_14",
+  "items": [ { "productId": "prd_mug", "quantity": 1 } ]
+}'
+HTTP/1.1 201 Created
+X-Request-Id: 6eae8442-c396-43c7-88db-130c24d69b68
+Cache-Control: no-store
+Location: /v1/tenants/ten_acme/orders/ord_da7064ec-5848-48ba-9101-a0d489fb1a38
+Content-Type: application/json; charset=utf-8
+Content-Length: 402
+Date: Thu, 29 Oct 2026 12:30:36 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"ord_da7064ec-5848-48ba-9101-a0d489fb1a38","status":"PENDING","customerId":"cus_acme_14","items":[{"productId":"prd_mug","sku":"MUG-001","name":"Camp Mug","unitPriceCents":1299,"quantity":1,"lineTotalCents":1299}],"subtotalCents":1299,"discountCents":0,"totalCents":1299,"currency":"USD","couponCode":null,"version":1,"createdAt":"2026-10-29T12:30:36.753Z","updatedAt":"2026-10-29T12:30:36.753Z"}
+
+$ curl -sS -i --request POST http://localhost:4010/v1/tenants/ten_acme/orders/ord_da7064ec-5848-48ba-9101-a0d489fb1a38/coupon -H 'Authorization: Bearer tok_acme_admin' -H 'Content-Type: application/json' --data-binary '{ "code": "MAX1" }'
+HTTP/1.1 200 OK
+X-Request-Id: c517de48-3dcd-4038-be48-7d935a9af211
+Content-Type: application/json; charset=utf-8
+Content-Length: 406
+Date: Thu, 29 Oct 2026 12:30:36 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"ord_da7064ec-5848-48ba-9101-a0d489fb1a38","status":"PENDING","customerId":"cus_acme_14","items":[{"productId":"prd_mug","sku":"MUG-001","name":"Camp Mug","unitPriceCents":1299,"quantity":1,"lineTotalCents":1299}],"subtotalCents":1299,"discountCents":100,"totalCents":1199,"currency":"USD","couponCode":"MAX1","version":2,"createdAt":"2026-10-29T12:30:36.753Z","updatedAt":"2026-10-29T12:30:36.780Z"}
+
+$ curl -sS -i --request POST http://localhost:4010/v1/tenants/ten_acme/orders -H 'Authorization: Bearer tok_acme_admin' -H 'Content-Type: application/json' -H 'Idempotency-Key: coupon-max1-order-b' --data-binary '{
+  "customerId": "cus_acme_15",
+  "items": [ { "productId": "prd_tee", "quantity": 1 } ]
+}'
+HTTP/1.1 201 Created
+X-Request-Id: 4febc124-ca13-489a-a004-232c03b2262c
+Cache-Control: no-store
+Location: /v1/tenants/ten_acme/orders/ord_a8358c49-7937-4e62-bbab-810cce34b477
+Content-Type: application/json; charset=utf-8
+Content-Length: 409
+Date: Thu, 29 Oct 2026 12:30:36 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"ord_a8358c49-7937-4e62-bbab-810cce34b477","status":"PENDING","customerId":"cus_acme_15","items":[{"productId":"prd_tee","sku":"TEE-001","name":"Classic T-Shirt","unitPriceCents":1999,"quantity":1,"lineTotalCents":1999}],"subtotalCents":1999,"discountCents":0,"totalCents":1999,"currency":"USD","couponCode":null,"version":1,"createdAt":"2026-10-29T12:30:36.800Z","updatedAt":"2026-10-29T12:30:36.800Z"}
+
+$ curl -sS -i --request POST http://localhost:4010/v1/tenants/ten_acme/orders/ord_a8358c49-7937-4e62-bbab-810cce34b477/coupon -H 'Authorization: Bearer tok_acme_admin' -H 'Content-Type: application/json' --data-binary '{ "code": "MAX1" }'
+HTTP/1.1 409 Conflict
+X-Request-Id: d2427a3d-675e-4575-b45e-d09b0fe0ec1c
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 266
+Date: Thu, 29 Oct 2026 12:30:36 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/coupon_exhausted","title":"Conflict","status":409,"detail":"This coupon has reached its redemption limit.","instance":"/v1/tenants/ten_acme/orders/ord_a8358c49-7937-4e62-bbab-810cce34b477/coupon","code":"coupon_exhausted"}
+
+$ curl -sS -i --request POST http://localhost:4010/v1/tenants/ten_acme/orders/ord_demo_payable/payments -H 'Authorization: Bearer tok_acme_admin' -H 'Content-Type: application/json' -H 'Idempotency-Key: coupon-pay-demo' --data-binary '{ "provider": "fakepay", "providerRef": "fp_coupon_demo" }'
+HTTP/1.1 201 Created
+X-Request-Id: 7e5c04f7-fa17-43c4-98fd-40f420bdc69e
+Cache-Control: no-store
+Content-Type: application/json; charset=utf-8
+Content-Length: 226
+Date: Thu, 29 Oct 2026 12:30:36 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"pay_779918c6-61b3-4bc4-ae93-ba59b960c82b","orderId":"ord_demo_payable","status":"SUCCEEDED","amountCents":2598,"currency":"USD","provider":"fakepay","providerRef":"fp_coupon_demo","createdAt":"2026-10-29T12:30:36.832Z"}
+
+$ curl -sS -i --request POST http://localhost:4010/v1/tenants/ten_acme/orders/ord_demo_payable/coupon -H 'Authorization: Bearer tok_acme_admin' -H 'Content-Type: application/json' --data-binary '{ "code": "SAVE10" }'
+HTTP/1.1 409 Conflict
+X-Request-Id: ffc7855d-b28b-4d6c-9310-f7c5c045d9c3
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 230
+Date: Thu, 29 Oct 2026 12:30:36 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/invalid_order_state","title":"Conflict","status":409,"detail":"Order is PAID, not PENDING.","instance":"/v1/tenants/ten_acme/orders/ord_demo_payable/coupon","code":"invalid_order_state"}
+

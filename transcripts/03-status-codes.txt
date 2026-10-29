@@ -1,0 +1,121 @@
+# 03-status-codes.http
+
+$ curl -sS -i --request GET http://localhost:4011/api/tenants/ten_acme/products/prd_tee -H 'Authorization: Bearer tok_acme_admin'
+HTTP/1.1 200 OK
+X-Request-Id: d1911f22-d329-4945-bddb-3c140506f022
+Content-Type: application/json; charset=utf-8
+Content-Length: 268
+Date: Thu, 29 Oct 2026 12:26:40 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"prd_tee","sku":"TEE-001","slug":"classic-tee","name":"Classic T-Shirt","description":"Heavyweight cotton tee.","priceCents":1999,"currency":"USD","stock":50,"active":true,"version":1,"createdAt":"2026-01-01T09:00:00.000Z","updatedAt":"2026-01-01T09:00:00.000Z"}
+
+$ curl -sS -i --request POST http://localhost:4011/api/tenants/ten_acme/products -H 'Authorization: Bearer tok_acme_admin' -H 'Content-Type: application/json' --data-binary '{
+  "sku": "SOC-001",
+  "slug": "trail-socks",
+  "name": "Trail Socks",
+  "priceCents": 999,
+  "currency": "USD",
+  "stock": 40
+}'
+HTTP/1.1 201 Created
+X-Request-Id: afeb3484-4723-435c-ad7d-d6e87cb70a6f
+Location: /api/tenants/ten_acme/products/prd_d5e94793-3359-457b-92e8-ea9fe0afbf58
+Content-Type: application/json; charset=utf-8
+Content-Length: 275
+Date: Thu, 29 Oct 2026 12:26:40 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"prd_d5e94793-3359-457b-92e8-ea9fe0afbf58","sku":"SOC-001","slug":"trail-socks","name":"Trail Socks","description":null,"priceCents":999,"currency":"USD","stock":40,"active":true,"version":1,"createdAt":"2026-10-29T12:26:40.687Z","updatedAt":"2026-10-29T12:26:40.687Z"}
+
+$ curl -sS -i --request DELETE http://localhost:4011/api/tenants/ten_acme/products/prd_d5e94793-3359-457b-92e8-ea9fe0afbf58 -H 'Authorization: Bearer tok_acme_admin'
+HTTP/1.1 204 No Content
+X-Request-Id: 03488036-5e77-4b08-afa4-d72269a43454
+Date: Thu, 29 Oct 2026 12:26:40 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+
+$ curl -sS -i --request POST http://localhost:4011/api/tenants/ten_acme/products -H 'Authorization: Bearer tok_acme_admin' -H 'Content-Type: application/json' --data-binary '{"sku": "BAD-001",'
+HTTP/1.1 400 Bad Request
+X-Request-Id: ddd22457-4451-4080-92b8-5477678b9870
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 210
+Date: Thu, 29 Oct 2026 12:26:40 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/malformed_json","title":"Bad Request","status":400,"detail":"The request body is not valid JSON.","instance":"/api/tenants/ten_acme/products","code":"malformed_json"}
+
+$ curl -sS -i --request GET http://localhost:4011/api/tenants/ten_acme/products/prd_missing -H 'Authorization: Bearer tok_acme_admin'
+HTTP/1.1 404 Not Found
+X-Request-Id: 2176d9e6-dd92-408b-84e5-05e8b71d2d6d
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 193
+Date: Thu, 29 Oct 2026 12:26:40 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/not_found","title":"Not Found","status":404,"detail":"Product not found.","instance":"/api/tenants/ten_acme/products/prd_missing","code":"not_found"}
+
+$ curl -sS -i --request POST http://localhost:4011/api/tenants/ten_acme/products -H 'Authorization: Bearer tok_acme_admin' -H 'Content-Type: application/json' --data-binary '{
+  "sku": "TEE-001",
+  "slug": "another-tee",
+  "name": "Another Tee",
+  "priceCents": 1999,
+  "currency": "USD",
+  "stock": 5
+}'
+HTTP/1.1 409 Conflict
+X-Request-Id: 498e03f6-41bd-4fdd-a83e-a5de940aa454
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 202
+Date: Thu, 29 Oct 2026 12:26:40 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/sku_taken","title":"Conflict","status":409,"detail":"That SKU already exists for this tenant.","instance":"/api/tenants/ten_acme/products","code":"sku_taken"}
+
+$ curl -sS -i --request POST http://localhost:4011/api/tenants/ten_acme/products -H 'Authorization: Bearer tok_acme_admin' -H 'Content-Type: application/json' --data-binary '{
+  "sku": "HAT-001",
+  "slug": "sun-hat",
+  "name": "Sun Hat",
+  "priceCents": 1500,
+  "currency": "usd",
+  "stock": 10
+}'
+HTTP/1.1 422 Unprocessable Entity
+X-Request-Id: 81517661-be96-47b9-8233-3fa81a4c911b
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 335
+Date: Thu, 29 Oct 2026 12:26:40 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/validation_failed","title":"Validation Failed","status":422,"detail":"One or more fields are invalid.","instance":"/api/tenants/ten_acme/products","code":"validation_failed","errors":[{"pointer":"/currency","code":"invalid_format","message":"Use a three-letter ISO 4217 code such as USD."}]}
+
+$ curl -sS -i --request GET http://localhost:4011/api/tenants/ten_acme/products/prd_tee
+HTTP/1.1 401 Unauthorized
+X-Request-Id: ef1f72fd-a1c4-472f-8346-e07f4ab6d1d3
+WWW-Authenticate: Bearer realm="api-learn", error="invalid_token"
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 209
+Date: Thu, 29 Oct 2026 12:26:40 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/invalid_token","title":"Unauthorized","status":401,"detail":"A Bearer token is required.","instance":"/api/tenants/ten_acme/products/prd_tee","code":"invalid_token"}
+
+$ curl -sS -i --request GET http://localhost:4011/api/tenants/ten_globex/products -H 'Authorization: Bearer tok_acme_admin'
+HTTP/1.1 403 Forbidden
+X-Request-Id: 42f54ac3-3701-40e2-893b-a2179da97564
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 213
+Date: Thu, 29 Oct 2026 12:26:40 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/forbidden","title":"Forbidden","status":403,"detail":"This token is not allowed to access that tenant.","instance":"/api/tenants/ten_globex/products","code":"forbidden"}
+

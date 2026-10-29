@@ -1,0 +1,38 @@
+@baseUrl = http://localhost:4010
+@token = tok_acme_admin
+
+### put one customer in the banned state for the combined filter
+POST {{baseUrl}}/v1/tenants/ten_acme/customers/cus_acme_10/ban
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "reason": "Fraud ring investigation" }
+
+### search for a term and filter by status at the same time
+GET {{baseUrl}}/v1/tenants/ten_acme/customers?q=judy&status=BANNED
+Authorization: Bearer {{token}}
+
+### first cursor page, sorted by name
+# @capture nextCursor = $.pagination.nextCursor
+GET {{baseUrl}}/v1/tenants/ten_acme/customers?limit=5&sort=name
+Authorization: Bearer {{token}}
+
+### next page with the opaque cursor
+GET {{baseUrl}}/v1/tenants/ten_acme/customers?limit=5&sort=name&cursor={{nextCursor}}
+Authorization: Bearer {{token}}
+
+### a total count on the offset path
+GET {{baseUrl}}/v1/tenants/ten_acme/customers?limit=5&offset=0&includeTotal=true
+Authorization: Bearer {{token}}
+
+### the same endpoint is tenant-local
+GET {{baseUrl}}/v1/tenants/ten_globex/customers?limit=2
+Authorization: Bearer tok_globex_admin
+
+### a cursor from another tenant is not usable
+GET {{baseUrl}}/v1/tenants/ten_globex/customers?limit=2&cursor={{nextCursor}}
+Authorization: Bearer tok_globex_admin
+
+### tampered cursor
+GET {{baseUrl}}/v1/tenants/ten_acme/customers?cursor=abc
+Authorization: Bearer {{token}}

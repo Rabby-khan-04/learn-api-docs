@@ -1,0 +1,49 @@
+@baseUrl = http://localhost:4011
+
+### every broken field is reported, with its JSON pointer
+POST {{baseUrl}}/api/tenants/ten_acme/products
+Content-Type: application/json
+
+{
+  "sku": "tee-1",
+  "slug": "Bad Slug",
+  "name": "",
+  "priceCents": -1,
+  "currency": "usd",
+  "stock": 1.5,
+  "extra": true
+}
+
+### nested pointers locate an item inside an array
+PATCH {{baseUrl}}/api/tenants/ten_acme/products/bulk
+Content-Type: application/json
+
+{
+  "updates": [
+    { "id": "prd_tee", "priceCents": -100 }
+  ]
+}
+
+### bulk failures repeat the item id in each error
+PATCH {{baseUrl}}/api/tenants/ten_acme/products/bulk
+Content-Type: application/json
+
+{
+  "updates": [
+    { "id": "prd_tee", "priceCents": 2000, "expectedVersion": 999 },
+    { "id": "prd_missing", "priceCents": 2000 }
+  ]
+}
+
+### a state conflict is 409 with a stable code
+POST {{baseUrl}}/api/tenants/ten_acme/products
+Content-Type: application/json
+
+{
+  "sku": "TEE-001",
+  "slug": "duplicate-sku",
+  "name": "Duplicate SKU",
+  "priceCents": 1999,
+  "currency": "USD",
+  "stock": 1
+}

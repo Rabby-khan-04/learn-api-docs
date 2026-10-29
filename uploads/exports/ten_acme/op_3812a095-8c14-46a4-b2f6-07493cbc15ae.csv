@@ -1,0 +1,5 @@
+id,sku,slug,name,priceCents,currency,stock,active,version,createdAt
+prd_tee,TEE-001,classic-tee,Classic T-Shirt,1999,USD,50,true,1,2026-01-01T09:00:00.000Z
+prd_mug,MUG-001,camp-mug,Camp Mug,1299,USD,120,true,1,2026-01-01T10:00:00.000Z
+prd_hoodie,HOO-001,trail-hoodie,Trail Hoodie,4999,USD,8,true,1,2026-01-01T11:00:00.000Z
+prd_cap,CAP-001,running-cap,Running Cap,2499,USD,0,false,1,2026-01-01T12:00:00.000Z

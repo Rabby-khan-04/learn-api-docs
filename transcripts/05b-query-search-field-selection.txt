@@ -1,0 +1,68 @@
+# 05b-query-search-field-selection.http
+
+$ curl -sS -i --request GET http://localhost:4011/api/tenants/ten_acme/products\?q=tee
+HTTP/1.1 200 OK
+X-Request-Id: dabff9c2-57b4-4a44-b954-addc604c8191
+Content-Type: application/json; charset=utf-8
+Content-Length: 339
+Date: Thu, 29 Oct 2026 12:26:47 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"data":[{"id":"prd_tee","sku":"TEE-001","slug":"classic-tee","name":"Classic T-Shirt","description":"Heavyweight cotton tee.","priceCents":1999,"currency":"USD","stock":50,"active":true,"version":1,"createdAt":"2026-01-01T09:00:00.000Z","updatedAt":"2026-01-01T09:00:00.000Z"}],"pagination":{"limit":20,"hasMore":false,"nextCursor":null}}
+
+$ curl -sS -i --request GET http://localhost:4011/api/tenants/ten_acme/products\?q=MUG
+HTTP/1.1 200 OK
+X-Request-Id: 6167dbc2-3915-4992-a26a-6e1a975ea55b
+Content-Type: application/json; charset=utf-8
+Content-Length: 326
+Date: Thu, 29 Oct 2026 12:26:47 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"data":[{"id":"prd_mug","sku":"MUG-001","slug":"camp-mug","name":"Camp Mug","description":"Enamel mug, 350 ml.","priceCents":1299,"currency":"USD","stock":120,"active":true,"version":1,"createdAt":"2026-01-01T10:00:00.000Z","updatedAt":"2026-01-01T10:00:00.000Z"}],"pagination":{"limit":20,"hasMore":false,"nextCursor":null}}
+
+$ curl -sS -i --request GET http://localhost:4011/api/tenants/ten_acme/products\?fields=name,priceCents\&limit=3
+HTTP/1.1 200 OK
+X-Request-Id: 9be91f14-1032-4ba0-bd05-e1caca65be1b
+Content-Type: application/json; charset=utf-8
+Content-Length: 309
+Date: Thu, 29 Oct 2026 12:26:47 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"data":[{"id":"prd_cap","name":"Running Cap","priceCents":2499},{"id":"prd_hoodie","name":"Trail Hoodie","priceCents":4999},{"id":"prd_mug","name":"Camp Mug","priceCents":1299}],"pagination":{"limit":3,"hasMore":true,"nextCursor":"eyJjcmVhdGVkQXQiOiIyMDI2LTAxLTAxVDEwOjAwOjAwLjAwMFoiLCJpZCI6InByZF9tdWcifQ"}}
+
+$ curl -sS -i --request GET http://localhost:4011/api/tenants/ten_acme/products\?fields=name\&limit=1
+HTTP/1.1 200 OK
+X-Request-Id: 399ee574-ab70-46a8-a4ff-81d21175d063
+Content-Type: application/json; charset=utf-8
+Content-Length: 178
+Date: Thu, 29 Oct 2026 12:26:47 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"data":[{"id":"prd_cap","name":"Running Cap"}],"pagination":{"limit":1,"hasMore":true,"nextCursor":"eyJjcmVhdGVkQXQiOiIyMDI2LTAxLTAxVDEyOjAwOjAwLjAwMFoiLCJpZCI6InByZF9jYXAifQ"}}
+
+$ curl -sS -i --request GET http://localhost:4011/api/tenants/ten_acme/products\?fields=name,passwordHash
+HTTP/1.1 422 Unprocessable Entity
+X-Request-Id: 63b90883-59c6-45bc-9aca-0c0f73c8f921
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 334
+Date: Thu, 29 Oct 2026 12:26:47 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/invalid_fields","title":"Validation Failed","status":422,"detail":"Unknown fields: passwordHash","instance":"/api/tenants/ten_acme/products?fields=name,passwordHash","code":"invalid_fields","errors":[{"pointer":"/fields","code":"unknown_field","message":"Unknown field \"passwordHash\"."}]}
+
+$ curl -sS -i --request GET http://localhost:4011/api/tenants/ten_acme/products\?q=zzzz
+HTTP/1.1 200 OK
+X-Request-Id: 71c11ac9-a553-438e-b31c-6c347e1ef619
+Content-Type: application/json; charset=utf-8
+Content-Length: 71
+Date: Thu, 29 Oct 2026 12:26:47 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"data":[],"pagination":{"limit":20,"hasMore":false,"nextCursor":null}}
+

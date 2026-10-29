@@ -1,0 +1,65 @@
+# 13c-concurrency-etags-if-match.http
+
+$ curl -sS -i --request GET http://localhost:4010/api/tenants/ten_acme/products/prd_tee
+HTTP/1.1 200 OK
+X-Request-Id: be2a8e0a-c55f-49a5-8d06-1bc4b6323939
+ETag: "XbeZlWWW1h_Nn0RCRZg5"
+Cache-Control: private, max-age=60
+Vary: Authorization
+Content-Type: application/json; charset=utf-8
+Content-Length: 268
+Date: Thu, 29 Oct 2026 12:27:25 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"prd_tee","sku":"TEE-001","slug":"classic-tee","name":"Classic T-Shirt","description":"Heavyweight cotton tee.","priceCents":1999,"currency":"USD","stock":50,"active":true,"version":1,"createdAt":"2026-01-01T09:00:00.000Z","updatedAt":"2026-10-29T12:27:24.625Z"}
+
+$ curl -sS -i --request PATCH http://localhost:4010/api/tenants/ten_acme/products/prd_tee -H 'Content-Type: application/json' -H 'If-Match: "XbeZlWWW1h_Nn0RCRZg5"' --data-binary '{ "priceCents": 2199 }'
+HTTP/1.1 200 OK
+X-Request-Id: fc6d71b5-e573-4c24-b56c-4fef25a343b6
+ETag: "CAZ-hCuHbJuTi9UXCiDn"
+Cache-Control: private, max-age=60
+Content-Type: application/json; charset=utf-8
+Content-Length: 268
+Date: Thu, 29 Oct 2026 12:27:25 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"prd_tee","sku":"TEE-001","slug":"classic-tee","name":"Classic T-Shirt","description":"Heavyweight cotton tee.","priceCents":2199,"currency":"USD","stock":50,"active":true,"version":2,"createdAt":"2026-01-01T09:00:00.000Z","updatedAt":"2026-10-29T12:27:25.038Z"}
+
+$ curl -sS -i --request PATCH http://localhost:4010/api/tenants/ten_acme/products/prd_tee -H 'Content-Type: application/json' -H 'If-Match: "XbeZlWWW1h_Nn0RCRZg5"' --data-binary '{ "priceCents": 2399 }'
+HTTP/1.1 412 Precondition Failed
+X-Request-Id: 68127ce4-9257-4cdc-a35c-f4867d47ad1c
+ETag: "CAZ-hCuHbJuTi9UXCiDn"
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 265
+Date: Thu, 29 Oct 2026 12:27:25 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/precondition_failed","title":"Precondition Failed","status":412,"detail":"If-Match does not match the current resource.","instance":"/api/tenants/ten_acme/products/prd_tee","code":"precondition_failed","currentVersion":2}
+
+$ curl -sS -i --request PATCH http://localhost:4010/api/tenants/ten_acme/products/prd_tee -H 'Content-Type: application/json' -H 'If-Match: *' --data-binary '{ "stock": 45 }'
+HTTP/1.1 200 OK
+X-Request-Id: 0c9a5787-2603-4a10-b8bc-1f9f1d8bb5f3
+ETag: "AJ7oBtDRb-thQ4rRBA_b"
+Cache-Control: private, max-age=60
+Content-Type: application/json; charset=utf-8
+Content-Length: 268
+Date: Thu, 29 Oct 2026 12:27:25 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"prd_tee","sku":"TEE-001","slug":"classic-tee","name":"Classic T-Shirt","description":"Heavyweight cotton tee.","priceCents":2199,"currency":"USD","stock":45,"active":true,"version":3,"createdAt":"2026-01-01T09:00:00.000Z","updatedAt":"2026-10-29T12:27:25.073Z"}
+
+$ curl -sS -i --request PATCH http://localhost:4010/api/tenants/ten_acme/products/prd_tee -H 'Content-Type: application/json' --data-binary '{ "version": 99 }'
+HTTP/1.1 422 Unprocessable Entity
+X-Request-Id: 298c6ccd-5740-4b4a-91be-df4db3149252
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 399
+Date: Thu, 29 Oct 2026 12:27:25 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/validation_failed","title":"Validation Failed","status":422,"detail":"One or more fields are invalid.","instance":"/api/tenants/ten_acme/products/prd_tee","code":"validation_failed","errors":[{"pointer":"","code":"unrecognized_keys","message":"Unrecognized key: \"version\""},{"pointer":"","code":"custom","message":"Send at least one field to update."}]}
+

@@ -1,0 +1,28 @@
+@baseUrl = http://localhost:4010
+@token = tok_acme_admin
+
+### start an export: 202 Accepted with an operation
+# @capture operationId = $.operation.id
+POST {{baseUrl}}/v1/tenants/ten_acme/exports
+Authorization: Bearer {{token}}
+
+### poll immediately: still queued
+GET {{baseUrl}}/v1/tenants/ten_acme/exports/{{operationId}}
+Authorization: Bearer {{token}}
+
+### the result is not ready: 409
+GET {{baseUrl}}/v1/tenants/ten_acme/exports/{{operationId}}/result
+Authorization: Bearer {{token}}
+
+### after the job finishes, the operation succeeded
+# @wait 1500
+GET {{baseUrl}}/v1/tenants/ten_acme/exports/{{operationId}}
+Authorization: Bearer {{token}}
+
+### download the CSV through the tenant-scoped result URL
+GET {{baseUrl}}/v1/tenants/ten_acme/exports/{{operationId}}/result
+Authorization: Bearer {{token}}
+
+### another tenant cannot see this operation
+GET {{baseUrl}}/v1/tenants/ten_globex/exports/{{operationId}}
+Authorization: Bearer {{token}}

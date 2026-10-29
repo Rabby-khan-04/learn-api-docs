@@ -1,0 +1,95 @@
+# 13a-put-vs-patch-partial-updates.http
+
+$ curl -sS -i --request GET http://localhost:4010/api/tenants/ten_acme/products/prd_tee
+HTTP/1.1 200 OK
+X-Request-Id: 77a824e8-10fb-4bcd-a327-8a1104f728c5
+Content-Type: application/json; charset=utf-8
+Content-Length: 268
+Date: Thu, 29 Oct 2026 12:27:19 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"prd_tee","sku":"TEE-001","slug":"classic-tee","name":"Classic T-Shirt","description":"Heavyweight cotton tee.","priceCents":1999,"currency":"USD","stock":50,"active":true,"version":1,"createdAt":"2026-01-01T09:00:00.000Z","updatedAt":"2026-10-29T12:27:19.567Z"}
+
+$ curl -sS -i --request PUT http://localhost:4010/api/tenants/ten_acme/products/prd_tee -H 'Content-Type: application/json' --data-binary '{
+  "sku": "TEE-001",
+  "slug": "classic-tee",
+  "name": "Classic T-Shirt (2026)",
+  "description": "New heavyweight cotton tee.",
+  "priceCents": 2199,
+  "currency": "USD",
+  "stock": 50,
+  "active": true
+}'
+HTTP/1.1 200 OK
+X-Request-Id: 32398349-a71b-4ed7-843c-02caa75955be
+Content-Type: application/json; charset=utf-8
+Content-Length: 279
+Date: Thu, 29 Oct 2026 12:27:19 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"prd_tee","sku":"TEE-001","slug":"classic-tee","name":"Classic T-Shirt (2026)","description":"New heavyweight cotton tee.","priceCents":2199,"currency":"USD","stock":50,"active":true,"version":2,"createdAt":"2026-01-01T09:00:00.000Z","updatedAt":"2026-10-29T12:27:19.787Z"}
+
+$ curl -sS -i --request PATCH http://localhost:4010/api/tenants/ten_acme/products/prd_tee -H 'Content-Type: application/json' --data-binary '{ "priceCents": 2299 }'
+HTTP/1.1 200 OK
+X-Request-Id: 831da345-2cf2-44d7-9b62-9225dbbbec1d
+Content-Type: application/json; charset=utf-8
+Content-Length: 279
+Date: Thu, 29 Oct 2026 12:27:19 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"prd_tee","sku":"TEE-001","slug":"classic-tee","name":"Classic T-Shirt (2026)","description":"New heavyweight cotton tee.","priceCents":2299,"currency":"USD","stock":50,"active":true,"version":3,"createdAt":"2026-01-01T09:00:00.000Z","updatedAt":"2026-10-29T12:27:19.803Z"}
+
+$ curl -sS -i --request PATCH http://localhost:4010/api/tenants/ten_acme/products/prd_tee -H 'Content-Type: application/json' --data-binary '{ "description": null }'
+HTTP/1.1 200 OK
+X-Request-Id: 7b4c52d3-2d94-4bbf-9e54-4c7f2b3f3ac1
+Content-Type: application/json; charset=utf-8
+Content-Length: 254
+Date: Thu, 29 Oct 2026 12:27:19 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"prd_tee","sku":"TEE-001","slug":"classic-tee","name":"Classic T-Shirt (2026)","description":null,"priceCents":2299,"currency":"USD","stock":50,"active":true,"version":4,"createdAt":"2026-01-01T09:00:00.000Z","updatedAt":"2026-10-29T12:27:19.817Z"}
+
+$ curl -sS -i --request PATCH http://localhost:4010/api/tenants/ten_acme/products/prd_tee -H 'Content-Type: application/json' --data-binary '{ "priceCents": 1999, "costCents": 700 }'
+HTTP/1.1 422 Unprocessable Entity
+X-Request-Id: 6bdb173b-9cb6-4b4f-a76f-15eeaaf540db
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 323
+Date: Thu, 29 Oct 2026 12:27:19 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/validation_failed","title":"Validation Failed","status":422,"detail":"One or more fields are invalid.","instance":"/api/tenants/ten_acme/products/prd_tee","code":"validation_failed","errors":[{"pointer":"","code":"unrecognized_keys","message":"Unrecognized key: \"costCents\""}]}
+
+$ curl -sS -i --request PUT http://localhost:4010/api/tenants/ten_acme/products/prd_mug -H 'Content-Type: application/json' --data-binary '{
+  "sku": "MUG-001",
+  "slug": "camp-mug",
+  "name": "Camp Mug",
+  "priceCents": 1299,
+  "currency": "USD",
+  "active": true
+}'
+HTTP/1.1 422 Unprocessable Entity
+X-Request-Id: 1f74b95f-d6c2-404c-be49-45c7fa0be866
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 343
+Date: Thu, 29 Oct 2026 12:27:19 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/validation_failed","title":"Validation Failed","status":422,"detail":"One or more fields are invalid.","instance":"/api/tenants/ten_acme/products/prd_mug","code":"validation_failed","errors":[{"pointer":"/stock","code":"invalid_type","message":"Invalid input: expected number, received undefined"}]}
+
+$ curl -sS -i --request PATCH http://localhost:4010/api/tenants/ten_acme/products/prd_mug -H 'Content-Type: application/json' --data-binary \{\}
+HTTP/1.1 422 Unprocessable Entity
+X-Request-Id: 6ce41809-ebb9-4751-9fad-457e134b9f89
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 315
+Date: Thu, 29 Oct 2026 12:27:19 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/validation_failed","title":"Validation Failed","status":422,"detail":"One or more fields are invalid.","instance":"/api/tenants/ten_acme/products/prd_mug","code":"validation_failed","errors":[{"pointer":"","code":"custom","message":"Send at least one field to update."}]}
+

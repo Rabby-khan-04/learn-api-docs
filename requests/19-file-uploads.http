@@ -1,0 +1,35 @@
+@baseUrl = http://localhost:4010
+@token = tok_acme_admin
+
+### upload a PNG and attach it to a product
+# @form file=@requests/fixtures/pixel.png;type=image/png
+# @capture uploadId = $.id
+POST {{baseUrl}}/v1/tenants/ten_acme/uploads?productId=prd_tee
+Authorization: Bearer {{token}}
+
+### download it back through the tenant-scoped URL
+GET {{baseUrl}}/v1/tenants/ten_acme/uploads/{{uploadId}}
+Authorization: Bearer {{token}}
+
+### the same URL under another tenant is forbidden
+GET {{baseUrl}}/v1/tenants/ten_globex/uploads/{{uploadId}}
+Authorization: Bearer {{token}}
+
+### a text file renamed to .png is rejected after content sniffing
+# @form file=@requests/fixtures/not-an-image.png;type=image/png
+POST {{baseUrl}}/v1/tenants/ten_acme/uploads
+Authorization: Bearer {{token}}
+
+### a file above the 2 MiB limit is rejected before storage
+# @form file=@requests/fixtures/too-big.png;type=image/png
+POST {{baseUrl}}/v1/tenants/ten_acme/uploads
+Authorization: Bearer {{token}}
+
+### attaching to a product that does not exist is a 404
+# @form file=@requests/fixtures/pixel.png;type=image/png
+POST {{baseUrl}}/v1/tenants/ten_acme/uploads?productId=prd_missing
+Authorization: Bearer {{token}}
+
+### a Globex token cannot read an Acme upload, even with the right ID
+GET {{baseUrl}}/v1/tenants/ten_globex/uploads/{{uploadId}}
+Authorization: Bearer tok_globex_admin

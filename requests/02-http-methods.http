@@ -1,0 +1,29 @@
+@baseUrl = http://localhost:4011
+
+### GET is safe: reading changes nothing
+GET {{baseUrl}}/api/tenants/ten_acme/products?limit=2
+
+### POST creates a new product under the collection
+# @capture createdId = $.id
+POST {{baseUrl}}/api/tenants/ten_acme/products
+Content-Type: application/json
+
+{
+  "sku": "BAG-001",
+  "slug": "day-pack",
+  "name": "Day Pack",
+  "description": "20 litre pack.",
+  "priceCents": 5999,
+  "currency": "USD",
+  "stock": 15,
+  "active": true
+}
+
+### GET the newly created product
+GET {{baseUrl}}/api/tenants/ten_acme/products/{{createdId}}
+
+### DELETE removes it
+DELETE {{baseUrl}}/api/tenants/ten_acme/products/{{createdId}}
+
+### GET after DELETE is a 404
+GET {{baseUrl}}/api/tenants/ten_acme/products/{{createdId}}

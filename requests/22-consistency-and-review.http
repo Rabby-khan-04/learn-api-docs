@@ -1,0 +1,18 @@
+@baseUrl = http://localhost:4010
+@token = tok_acme_admin
+
+### the same DTO shape across single and list responses
+GET {{baseUrl}}/v1/tenants/ten_acme/products/prd_tee
+Authorization: Bearer {{token}}
+
+### pagination fields use the same names everywhere
+GET {{baseUrl}}/v1/tenants/ten_acme/products?limit=2
+Authorization: Bearer {{token}}
+
+### every error uses the same problem members
+GET {{baseUrl}}/v1/tenants/ten_acme/products/prd_missing
+Authorization: Bearer {{token}}
+
+### the same query parameter spelling is used on customers
+GET {{baseUrl}}/v1/tenants/ten_acme/customers?limit=2&sort=name&includeTotal=true
+Authorization: Bearer {{token}}

@@ -1,0 +1,32 @@
+@baseUrl = http://localhost:4010
+
+### update two prices in one atomic batch
+PATCH {{baseUrl}}/api/tenants/ten_acme/products/bulk
+Content-Type: application/json
+
+{
+  "updates": [
+    { "id": "prd_tee", "priceCents": 2199, "expectedVersion": 1 },
+    { "id": "prd_mug", "priceCents": 1399, "expectedVersion": 1 }
+  ]
+}
+
+### one bad item aborts the whole batch
+PATCH {{baseUrl}}/api/tenants/ten_acme/products/bulk
+Content-Type: application/json
+
+{
+  "updates": [
+    { "id": "prd_tee", "priceCents": 2299, "expectedVersion": 99 },
+    { "id": "prd_missing", "priceCents": 100 }
+  ]
+}
+
+### the failed batch changed nothing
+GET {{baseUrl}}/api/tenants/ten_acme/products/prd_tee
+
+### an empty batch is rejected
+PATCH {{baseUrl}}/api/tenants/ten_acme/products/bulk
+Content-Type: application/json
+
+{ "updates": [] }

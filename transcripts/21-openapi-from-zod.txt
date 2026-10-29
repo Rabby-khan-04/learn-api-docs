@@ -1,0 +1,170 @@
+# 21-openapi-from-zod.http
+
+$ curl -sS -i --request GET http://localhost:4010/openapi.json
+HTTP/1.1 200 OK
+X-Request-Id: fa368e04-77a6-4b1a-9f6c-350e80f4cc01
+Cache-Control: no-store
+Content-Type: application/json; charset=utf-8
+Content-Length: 23614
+Date: Thu, 29 Oct 2026 12:29:32 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+
+<the 23,614-byte document is printed in full by the server; it is omitted here to keep this transcript readable>
+
+$ curl -sS http://localhost:4010/openapi.json | jq -r '.openapi, (.paths|keys|length)'
+3.2.0
+19
+
+$ curl -sS http://localhost:4010/openapi.json | jq -r '.paths|keys[]'
+/health
+/v1/tenants/{tenantId}/customers
+/v1/tenants/{tenantId}/customers/{customerId}
+/v1/tenants/{tenantId}/customers/{customerId}/ban
+/v1/tenants/{tenantId}/customers/{customerId}/unban
+/v1/tenants/{tenantId}/exports
+/v1/tenants/{tenantId}/exports/{operationId}
+/v1/tenants/{tenantId}/exports/{operationId}/result
+/v1/tenants/{tenantId}/orders
+/v1/tenants/{tenantId}/orders/{orderId}
+/v1/tenants/{tenantId}/orders/{orderId}/coupon
+/v1/tenants/{tenantId}/orders/{orderId}/payments
+/v1/tenants/{tenantId}/products
+/v1/tenants/{tenantId}/products/bulk
+/v1/tenants/{tenantId}/products/{productId}
+/v1/tenants/{tenantId}/uploads
+/v1/tenants/{tenantId}/uploads/{uploadId}
+/v1/tenants/{tenantId}/webhook-endpoints
+/v1/tenants/{tenantId}/webhook-endpoints/{endpointId}/deliveries
+
+$ curl -sS http://localhost:4010/openapi.json | jq '.paths["/v1/tenants/{tenantId}/products"].post | {summary, requestBody, responses: (.responses|keys)}'
+{
+  "summary": "Create a product",
+  "requestBody": {
+    "required": true,
+    "content": {
+      "application/json": {
+        "schema": {
+          "$ref": "#/components/schemas/CreateProduct"
+        }
+      }
+    }
+  },
+  "responses": [
+    "201",
+    "409",
+    "422"
+  ]
+}
+
+$ curl -sS http://localhost:4010/openapi.json | jq '.components.parameters.TenantId'
+{
+  "name": "tenantId",
+  "in": "path",
+  "required": true,
+  "schema": {
+    "type": "string"
+  },
+  "examples": {
+    "acme": {
+      "value": "ten_acme"
+    }
+  }
+}
+
+$ curl -sS http://localhost:4010/openapi.json | jq '.components.schemas.CreateProduct'
+{
+  "type": "object",
+  "properties": {
+    "sku": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 40,
+      "pattern": "^[A-Z0-9-]+$"
+    },
+    "slug": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 80,
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "description": {
+      "default": null,
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 2000
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "priceCents": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000000
+    },
+    "currency": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$"
+    },
+    "stock": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1000000
+    },
+    "active": {
+      "default": true,
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "sku",
+    "slug",
+    "name",
+    "priceCents",
+    "currency",
+    "stock"
+  ],
+  "additionalProperties": false
+}
+
+$ curl -sS http://localhost:4010/openapi.json | jq '.components.securitySchemes'
+{
+  "bearerAuth": {
+    "type": "http",
+    "scheme": "bearer"
+  }
+}
+
+$ curl -sS -i --request GET http://localhost:4010/docs
+HTTP/1.1 200 OK
+X-Request-Id: 7d39fe16-87d8-488e-bc99-02b2450d2381
+Content-Type: text/html; charset=utf-8
+Content-Length: 412
+Date: Thu, 29 Oct 2026 12:29:49 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>api-learn API docs</title>
+    <link rel="stylesheet" href="/docs-assets/swagger-ui.css" />
+  </head>
+  <body>
+    <div id="swagger-ui"></div>
+    <script src="/docs-assets/swagger-ui-bundle.js"></script>
+    <script>
+      SwaggerUIBundle({ url: '/openapi.json', dom_id: '#swagger-ui', deepLinking: true });
+    </script>
+  </body>
+</html>

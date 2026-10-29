@@ -1,0 +1,84 @@
+# 09-validation-zod.http
+
+$ curl -sS -i --request GET http://localhost:4011/api/tenants/ten_acme/products\?limit=2
+HTTP/1.1 200 OK
+X-Request-Id: f715802a-b041-4191-b125-7671c21ca812
+Content-Type: application/json; charset=utf-8
+Content-Length: 668
+Date: Thu, 29 Oct 2026 12:27:00 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"data":[{"id":"prd_cap","sku":"CAP-001","slug":"running-cap","name":"Running Cap","description":"Lightweight cap.","priceCents":2499,"currency":"USD","stock":0,"active":false,"version":1,"createdAt":"2026-01-01T12:00:00.000Z","updatedAt":"2026-01-01T12:00:00.000Z"},{"id":"prd_hoodie","sku":"HOO-001","slug":"trail-hoodie","name":"Trail Hoodie","description":"Fleece-lined hoodie.","priceCents":4999,"currency":"USD","stock":8,"active":true,"version":1,"createdAt":"2026-01-01T11:00:00.000Z","updatedAt":"2026-01-01T11:00:00.000Z"}],"pagination":{"limit":2,"hasMore":true,"nextCursor":"eyJjcmVhdGVkQXQiOiIyMDI2LTAxLTAxVDExOjAwOjAwLjAwMFoiLCJpZCI6InByZF9ob29kaWUifQ"}}
+
+$ curl -sS -i --request POST http://localhost:4011/api/tenants/ten_acme/products -H 'Content-Type: application/json' --data-binary '{
+  "sku": "  KEY-001  ",
+  "slug": "  keyring  ",
+  "name": "  Keyring  ",
+  "priceCents": 499,
+  "currency": "USD",
+  "stock": 100
+}'
+HTTP/1.1 201 Created
+X-Request-Id: c7696bfc-568e-4014-a495-7292348bea5e
+Location: /api/tenants/ten_acme/products/prd_0e09ddcc-46fc-4487-9c8c-1e399fa07cad
+Content-Type: application/json; charset=utf-8
+Content-Length: 268
+Date: Thu, 29 Oct 2026 12:27:00 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"prd_0e09ddcc-46fc-4487-9c8c-1e399fa07cad","sku":"KEY-001","slug":"keyring","name":"Keyring","description":null,"priceCents":499,"currency":"USD","stock":100,"active":true,"version":1,"createdAt":"2026-10-29T12:27:00.278Z","updatedAt":"2026-10-29T12:27:00.278Z"}
+
+$ curl -sS -i --request POST http://localhost:4011/api/tenants/ten_acme/products -H 'Content-Type: application/json' --data-binary '{
+  "sku": "PEN-001",
+  "slug": "pen",
+  "name": "Pen",
+  "priceCents": 199,
+  "currency": "USD",
+  "stock": 100,
+  "costCents": 50
+}'
+HTTP/1.1 422 Unprocessable Entity
+X-Request-Id: 272d68e1-c5a0-408c-844a-63c2999b0fcb
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 315
+Date: Thu, 29 Oct 2026 12:27:00 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/validation_failed","title":"Validation Failed","status":422,"detail":"One or more fields are invalid.","instance":"/api/tenants/ten_acme/products","code":"validation_failed","errors":[{"pointer":"","code":"unrecognized_keys","message":"Unrecognized key: \"costCents\""}]}
+
+$ curl -sS -i --request GET http://localhost:4011/api/tenants/ten_acme/products\?active=maybe
+HTTP/1.1 422 Unprocessable Entity
+X-Request-Id: dc557483-d033-4949-b3b6-6827f17b9ea0
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 350
+Date: Thu, 29 Oct 2026 12:27:00 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/validation_failed","title":"Validation Failed","status":422,"detail":"One or more fields are invalid.","instance":"/api/tenants/ten_acme/products?active=maybe","code":"validation_failed","errors":[{"pointer":"/active","code":"invalid_value","message":"Invalid option: expected one of \"true\"|\"false\""}]}
+
+$ curl -sS -i --request PATCH http://localhost:4011/api/tenants/ten_acme/products/prd_tee -H 'Content-Type: application/json' --data-binary \{\}
+HTTP/1.1 422 Unprocessable Entity
+X-Request-Id: 047a7357-661d-41cd-bc53-c0bfc2a2e65b
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 315
+Date: Thu, 29 Oct 2026 12:27:00 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/validation_failed","title":"Validation Failed","status":422,"detail":"One or more fields are invalid.","instance":"/api/tenants/ten_acme/products/prd_tee","code":"validation_failed","errors":[{"pointer":"","code":"custom","message":"Send at least one field to update."}]}
+
+$ curl -sS -i --request PATCH http://localhost:4011/api/tenants/ten_acme/products/prd_tee -H 'Content-Type: application/json' --data-binary '{ "description": null }'
+HTTP/1.1 200 OK
+X-Request-Id: 38144ca6-fdfc-4826-97fd-58849cbcc2af
+Content-Type: application/json; charset=utf-8
+Content-Length: 247
+Date: Thu, 29 Oct 2026 12:27:00 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"prd_tee","sku":"TEE-001","slug":"classic-tee","name":"Classic T-Shirt","description":null,"priceCents":1999,"currency":"USD","stock":50,"active":true,"version":2,"createdAt":"2026-01-01T09:00:00.000Z","updatedAt":"2026-10-29T12:27:00.319Z"}
+

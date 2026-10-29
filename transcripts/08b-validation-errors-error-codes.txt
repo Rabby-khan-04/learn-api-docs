@@ -1,0 +1,70 @@
+# 08b-validation-errors-error-codes.http
+
+$ curl -sS -i --request POST http://localhost:4011/api/tenants/ten_acme/products -H 'Content-Type: application/json' --data-binary '{
+  "sku": "tee-1",
+  "slug": "Bad Slug",
+  "name": "",
+  "priceCents": -1,
+  "currency": "usd",
+  "stock": 1.5,
+  "extra": true
+}'
+HTTP/1.1 422 Unprocessable Entity
+X-Request-Id: 9119aa20-689e-45eb-9de3-2e47b40e8287
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 911
+Date: Thu, 29 Oct 2026 12:26:58 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/validation_failed","title":"Validation Failed","status":422,"detail":"One or more fields are invalid.","instance":"/api/tenants/ten_acme/products","code":"validation_failed","errors":[{"pointer":"/sku","code":"invalid_format","message":"Use uppercase letters, digits, and hyphens."},{"pointer":"/slug","code":"invalid_format","message":"Use lowercase letters, digits, and hyphens."},{"pointer":"/name","code":"too_small","message":"Too small: expected string to have >=1 characters"},{"pointer":"/priceCents","code":"too_small","message":"Too small: expected number to be >=0"},{"pointer":"/currency","code":"invalid_format","message":"Use a three-letter ISO 4217 code such as USD."},{"pointer":"/stock","code":"invalid_type","message":"Invalid input: expected int, received number"},{"pointer":"","code":"unrecognized_keys","message":"Unrecognized key: \"extra\""}]}
+
+$ curl -sS -i --request PATCH http://localhost:4011/api/tenants/ten_acme/products/bulk -H 'Content-Type: application/json' --data-binary '{
+  "updates": [
+    { "id": "prd_tee", "priceCents": -100 }
+  ]
+}'
+HTTP/1.1 422 Unprocessable Entity
+X-Request-Id: ffcc8a8c-4617-4140-99bb-00bac6aa4360
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 338
+Date: Thu, 29 Oct 2026 12:26:58 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/validation_failed","title":"Validation Failed","status":422,"detail":"One or more fields are invalid.","instance":"/api/tenants/ten_acme/products/bulk","code":"validation_failed","errors":[{"pointer":"/updates/0/priceCents","code":"too_small","message":"Too small: expected number to be >=0"}]}
+
+$ curl -sS -i --request PATCH http://localhost:4011/api/tenants/ten_acme/products/bulk -H 'Content-Type: application/json' --data-binary '{
+  "updates": [
+    { "id": "prd_tee", "priceCents": 2000, "expectedVersion": 999 },
+    { "id": "prd_missing", "priceCents": 2000 }
+  ]
+}'
+HTTP/1.1 422 Unprocessable Entity
+X-Request-Id: 9422ad4b-9006-4093-a997-646b24532473
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 445
+Date: Thu, 29 Oct 2026 12:26:58 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/bulk_update_failed","title":"Validation Failed","status":422,"detail":"No products were changed because some updates failed.","instance":"/api/tenants/ten_acme/products/bulk","code":"bulk_update_failed","errors":[{"pointer":"/updates","code":"version_mismatch","message":"prd_tee: Expected version 999, found 1."},{"pointer":"/updates","code":"not_found","message":"prd_missing: Product not found."}]}
+
+$ curl -sS -i --request POST http://localhost:4011/api/tenants/ten_acme/products -H 'Content-Type: application/json' --data-binary '{
+  "sku": "TEE-001",
+  "slug": "duplicate-sku",
+  "name": "Duplicate SKU",
+  "priceCents": 1999,
+  "currency": "USD",
+  "stock": 1
+}'
+HTTP/1.1 409 Conflict
+X-Request-Id: 1cafc92c-2fea-4af3-b697-b05c193ad748
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 202
+Date: Thu, 29 Oct 2026 12:26:58 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/sku_taken","title":"Conflict","status":409,"detail":"That SKU already exists for this tenant.","instance":"/api/tenants/ten_acme/products","code":"sku_taken"}
+

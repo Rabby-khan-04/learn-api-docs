@@ -1,0 +1,16 @@
+@baseUrl = http://localhost:4011
+
+### canonical resource URL: tenant / collection / item
+GET {{baseUrl}}/api/tenants/ten_acme/products/prd_tee
+
+### a verb in the path is not a resource
+GET {{baseUrl}}/api/tenants/ten_acme/getProducts
+
+### nesting a real sub-resource one level is fine
+GET {{baseUrl}}/api/tenants/ten_acme/customers/cus_acme_01
+
+### an invented deep path has no route
+GET {{baseUrl}}/api/tenants/ten_acme/products/prd_tee/reviews/1/comments
+
+### the tenant segment prevents ID guessing across shops
+GET {{baseUrl}}/api/tenants/ten_globex/products/prd_tee

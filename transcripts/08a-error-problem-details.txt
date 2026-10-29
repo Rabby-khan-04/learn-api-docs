@@ -1,0 +1,64 @@
+# 08a-error-problem-details.http
+
+$ curl -sS -i --request GET http://localhost:4011/api/tenants/ten_acme/products/prd_missing
+HTTP/1.1 404 Not Found
+X-Request-Id: 7b3b4447-41f0-4572-8d15-28603e57cc21
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 193
+Date: Thu, 29 Oct 2026 12:26:55 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/not_found","title":"Not Found","status":404,"detail":"Product not found.","instance":"/api/tenants/ten_acme/products/prd_missing","code":"not_found"}
+
+$ curl -sS -i --request POST http://localhost:4011/api/tenants/ten_acme/products -H 'Content-Type: application/json' --data-binary '{"sku": "BAD-001",'
+HTTP/1.1 400 Bad Request
+X-Request-Id: a4a48547-1f98-4334-a4b6-c4ac26b0471e
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 210
+Date: Thu, 29 Oct 2026 12:26:55 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/malformed_json","title":"Bad Request","status":400,"detail":"The request body is not valid JSON.","instance":"/api/tenants/ten_acme/products","code":"malformed_json"}
+
+$ curl -sS -i --request POST http://localhost:4011/api/tenants/ten_acme/products -H 'Content-Type: application/json' --data-binary '{
+  "sku": "tee-1",
+  "slug": "Bad Slug",
+  "name": "",
+  "priceCents": -1,
+  "currency": "usd",
+  "stock": 1.5
+}'
+HTTP/1.1 422 Unprocessable Entity
+X-Request-Id: 7934cd77-8d4b-43a6-9c36-400a467ab0a3
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 829
+Date: Thu, 29 Oct 2026 12:26:55 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/validation_failed","title":"Validation Failed","status":422,"detail":"One or more fields are invalid.","instance":"/api/tenants/ten_acme/products","code":"validation_failed","errors":[{"pointer":"/sku","code":"invalid_format","message":"Use uppercase letters, digits, and hyphens."},{"pointer":"/slug","code":"invalid_format","message":"Use lowercase letters, digits, and hyphens."},{"pointer":"/name","code":"too_small","message":"Too small: expected string to have >=1 characters"},{"pointer":"/priceCents","code":"too_small","message":"Too small: expected number to be >=0"},{"pointer":"/currency","code":"invalid_format","message":"Use a three-letter ISO 4217 code such as USD."},{"pointer":"/stock","code":"invalid_type","message":"Invalid input: expected int, received number"}]}
+
+$ curl -sS -i --request GET http://localhost:4011/api/tenants/ten_acme/invoices
+HTTP/1.1 404 Not Found
+X-Request-Id: 9df08701-7d1e-4af9-ae69-4012262d14c2
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 215
+Date: Thu, 29 Oct 2026 12:26:55 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/not_found","title":"Not Found","status":404,"detail":"No route matches GET /api/tenants/ten_acme/invoices.","instance":"/api/tenants/ten_acme/invoices","code":"not_found"}
+
+$ curl -sS -i --request GET http://localhost:4011/api/tenants/ten_acme/products/prd_tee
+HTTP/1.1 200 OK
+X-Request-Id: fc61061c-e301-48ae-a3e0-ba433575df96
+Content-Type: application/json; charset=utf-8
+Content-Length: 268
+Date: Thu, 29 Oct 2026 12:26:55 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"prd_tee","sku":"TEE-001","slug":"classic-tee","name":"Classic T-Shirt","description":"Heavyweight cotton tee.","priceCents":1999,"currency":"USD","stock":50,"active":true,"version":1,"createdAt":"2026-01-01T09:00:00.000Z","updatedAt":"2026-01-01T09:00:00.000Z"}
+

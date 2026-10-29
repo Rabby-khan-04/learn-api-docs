@@ -1,0 +1,32 @@
+@baseUrl = http://localhost:4010
+
+### read the product and its version validator
+# @captureHeader etag = ETag
+GET {{baseUrl}}/api/tenants/ten_acme/products/prd_tee
+
+### update only if the version we read is still current
+PATCH {{baseUrl}}/api/tenants/ten_acme/products/prd_tee
+Content-Type: application/json
+If-Match: {{etag}}
+
+{ "priceCents": 2199 }
+
+### the old validator is now stale: 412
+PATCH {{baseUrl}}/api/tenants/ten_acme/products/prd_tee
+Content-Type: application/json
+If-Match: {{etag}}
+
+{ "priceCents": 2399 }
+
+### If-Match: * means "any current representation"
+PATCH {{baseUrl}}/api/tenants/ten_acme/products/prd_tee
+Content-Type: application/json
+If-Match: *
+
+{ "stock": 45 }
+
+### clients cannot set the version field directly
+PATCH {{baseUrl}}/api/tenants/ten_acme/products/prd_tee
+Content-Type: application/json
+
+{ "version": 99 }

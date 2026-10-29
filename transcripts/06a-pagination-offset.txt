@@ -1,0 +1,68 @@
+# 06a-pagination-offset.http
+
+$ curl -sS -i --request GET http://localhost:4011/api/tenants/ten_acme/products\?limit=2\&offset=0\&includeTotal=true
+HTTP/1.1 200 OK
+X-Request-Id: 59a1b0b1-71b4-4a80-b553-a42d5e67ed1f
+Content-Type: application/json; charset=utf-8
+Content-Length: 689
+Date: Thu, 29 Oct 2026 12:26:49 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"data":[{"id":"prd_cap","sku":"CAP-001","slug":"running-cap","name":"Running Cap","description":"Lightweight cap.","priceCents":2499,"currency":"USD","stock":0,"active":false,"version":1,"createdAt":"2026-01-01T12:00:00.000Z","updatedAt":"2026-01-01T12:00:00.000Z"},{"id":"prd_hoodie","sku":"HOO-001","slug":"trail-hoodie","name":"Trail Hoodie","description":"Fleece-lined hoodie.","priceCents":4999,"currency":"USD","stock":8,"active":true,"version":1,"createdAt":"2026-01-01T11:00:00.000Z","updatedAt":"2026-01-01T11:00:00.000Z"}],"pagination":{"limit":2,"hasMore":true,"nextCursor":"eyJjcmVhdGVkQXQiOiIyMDI2LTAxLTAxVDExOjAwOjAwLjAwMFoiLCJpZCI6InByZF9ob29kaWUifQ","offset":0,"total":4}}
+
+$ curl -sS -i --request GET http://localhost:4011/api/tenants/ten_acme/products\?limit=2\&offset=2\&includeTotal=true
+HTTP/1.1 200 OK
+X-Request-Id: a996bc85-79d0-43d2-b6cf-075533165c96
+Content-Type: application/json; charset=utf-8
+Content-Length: 615
+Date: Thu, 29 Oct 2026 12:26:49 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"data":[{"id":"prd_mug","sku":"MUG-001","slug":"camp-mug","name":"Camp Mug","description":"Enamel mug, 350 ml.","priceCents":1299,"currency":"USD","stock":120,"active":true,"version":1,"createdAt":"2026-01-01T10:00:00.000Z","updatedAt":"2026-01-01T10:00:00.000Z"},{"id":"prd_tee","sku":"TEE-001","slug":"classic-tee","name":"Classic T-Shirt","description":"Heavyweight cotton tee.","priceCents":1999,"currency":"USD","stock":50,"active":true,"version":1,"createdAt":"2026-01-01T09:00:00.000Z","updatedAt":"2026-01-01T09:00:00.000Z"}],"pagination":{"limit":2,"hasMore":false,"nextCursor":null,"offset":2,"total":4}}
+
+$ curl -sS -i --request GET http://localhost:4011/api/tenants/ten_acme/products\?limit=2\&offset=100\&includeTotal=true
+HTTP/1.1 200 OK
+X-Request-Id: a59031c2-d324-4f37-9e96-6f404e1e8a29
+Content-Type: application/json; charset=utf-8
+Content-Length: 93
+Date: Thu, 29 Oct 2026 12:26:49 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"data":[],"pagination":{"limit":2,"hasMore":false,"nextCursor":null,"offset":100,"total":4}}
+
+$ curl -sS -i --request GET http://localhost:4011/api/tenants/ten_acme/products\?limit=0
+HTTP/1.1 422 Unprocessable Entity
+X-Request-Id: fc7ee9ab-4e3f-4975-80ec-d8a5ff99d014
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 326
+Date: Thu, 29 Oct 2026 12:26:49 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/validation_failed","title":"Validation Failed","status":422,"detail":"One or more fields are invalid.","instance":"/api/tenants/ten_acme/products?limit=0","code":"validation_failed","errors":[{"pointer":"/limit","code":"too_small","message":"Too small: expected number to be >=1"}]}
+
+$ curl -sS -i --request GET http://localhost:4011/api/tenants/ten_acme/products\?limit=101
+HTTP/1.1 422 Unprocessable Entity
+X-Request-Id: 77b9e121-1f4a-442d-80e4-6782054d23b4
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 326
+Date: Thu, 29 Oct 2026 12:26:49 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/validation_failed","title":"Validation Failed","status":422,"detail":"One or more fields are invalid.","instance":"/api/tenants/ten_acme/products?limit=101","code":"validation_failed","errors":[{"pointer":"/limit","code":"too_big","message":"Too big: expected number to be <=100"}]}
+
+$ curl -sS -i --request GET http://localhost:4011/api/tenants/ten_acme/products\?offset=abc
+HTTP/1.1 422 Unprocessable Entity
+X-Request-Id: f6487579-14b4-4e24-9849-4bfb42cf63f8
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 341
+Date: Thu, 29 Oct 2026 12:26:49 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/validation_failed","title":"Validation Failed","status":422,"detail":"One or more fields are invalid.","instance":"/api/tenants/ten_acme/products?offset=abc","code":"validation_failed","errors":[{"pointer":"/offset","code":"invalid_type","message":"Invalid input: expected number, received NaN"}]}
+

@@ -1,0 +1,64 @@
+# 02-http-methods.http
+
+$ curl -sS -i --request GET http://localhost:4011/api/tenants/ten_acme/products\?limit=2
+HTTP/1.1 200 OK
+X-Request-Id: eef6783e-4e0e-4bd8-b26b-9211a6e55cbc
+Content-Type: application/json; charset=utf-8
+Content-Length: 668
+Date: Thu, 29 Oct 2026 12:26:38 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"data":[{"id":"prd_cap","sku":"CAP-001","slug":"running-cap","name":"Running Cap","description":"Lightweight cap.","priceCents":2499,"currency":"USD","stock":0,"active":false,"version":1,"createdAt":"2026-01-01T12:00:00.000Z","updatedAt":"2026-01-01T12:00:00.000Z"},{"id":"prd_hoodie","sku":"HOO-001","slug":"trail-hoodie","name":"Trail Hoodie","description":"Fleece-lined hoodie.","priceCents":4999,"currency":"USD","stock":8,"active":true,"version":1,"createdAt":"2026-01-01T11:00:00.000Z","updatedAt":"2026-01-01T11:00:00.000Z"}],"pagination":{"limit":2,"hasMore":true,"nextCursor":"eyJjcmVhdGVkQXQiOiIyMDI2LTAxLTAxVDExOjAwOjAwLjAwMFoiLCJpZCI6InByZF9ob29kaWUifQ"}}
+
+$ curl -sS -i --request POST http://localhost:4011/api/tenants/ten_acme/products -H 'Content-Type: application/json' --data-binary '{
+  "sku": "BAG-001",
+  "slug": "day-pack",
+  "name": "Day Pack",
+  "description": "20 litre pack.",
+  "priceCents": 5999,
+  "currency": "USD",
+  "stock": 15,
+  "active": true
+}'
+HTTP/1.1 201 Created
+X-Request-Id: 73d4fdc9-71af-4a8b-87dc-5f05498dcbd8
+Location: /api/tenants/ten_acme/products/prd_acb1b283-0e70-49a1-b303-a577c83237da
+Content-Type: application/json; charset=utf-8
+Content-Length: 282
+Date: Thu, 29 Oct 2026 12:26:38 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"prd_acb1b283-0e70-49a1-b303-a577c83237da","sku":"BAG-001","slug":"day-pack","name":"Day Pack","description":"20 litre pack.","priceCents":5999,"currency":"USD","stock":15,"active":true,"version":1,"createdAt":"2026-10-29T12:26:38.516Z","updatedAt":"2026-10-29T12:26:38.516Z"}
+
+$ curl -sS -i --request GET http://localhost:4011/api/tenants/ten_acme/products/prd_acb1b283-0e70-49a1-b303-a577c83237da
+HTTP/1.1 200 OK
+X-Request-Id: d3927a3a-28d8-4f7f-bf6e-e07136894a71
+Content-Type: application/json; charset=utf-8
+Content-Length: 282
+Date: Thu, 29 Oct 2026 12:26:38 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"prd_acb1b283-0e70-49a1-b303-a577c83237da","sku":"BAG-001","slug":"day-pack","name":"Day Pack","description":"20 litre pack.","priceCents":5999,"currency":"USD","stock":15,"active":true,"version":1,"createdAt":"2026-10-29T12:26:38.516Z","updatedAt":"2026-10-29T12:26:38.516Z"}
+
+$ curl -sS -i --request DELETE http://localhost:4011/api/tenants/ten_acme/products/prd_acb1b283-0e70-49a1-b303-a577c83237da
+HTTP/1.1 204 No Content
+X-Request-Id: 1cb1f68b-dd63-4bd9-82f2-2d502e05c76e
+Date: Thu, 29 Oct 2026 12:26:38 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+
+$ curl -sS -i --request GET http://localhost:4011/api/tenants/ten_acme/products/prd_acb1b283-0e70-49a1-b303-a577c83237da
+HTTP/1.1 404 Not Found
+X-Request-Id: 84dec09f-f56a-4c93-a6e7-d054869d9968
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 222
+Date: Thu, 29 Oct 2026 12:26:38 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/not_found","title":"Not Found","status":404,"detail":"Product not found.","instance":"/api/tenants/ten_acme/products/prd_acb1b283-0e70-49a1-b303-a577c83237da","code":"not_found"}
+

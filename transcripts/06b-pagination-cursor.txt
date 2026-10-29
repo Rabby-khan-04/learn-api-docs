@@ -1,0 +1,57 @@
+# 06b-pagination-cursor.http
+
+$ curl -sS -i --request GET http://localhost:4011/api/tenants/ten_acme/products\?limit=2
+HTTP/1.1 200 OK
+X-Request-Id: cff893e7-e2a3-40c7-afaa-f1dfc454ba35
+Content-Type: application/json; charset=utf-8
+Content-Length: 668
+Date: Thu, 29 Oct 2026 12:26:51 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"data":[{"id":"prd_cap","sku":"CAP-001","slug":"running-cap","name":"Running Cap","description":"Lightweight cap.","priceCents":2499,"currency":"USD","stock":0,"active":false,"version":1,"createdAt":"2026-01-01T12:00:00.000Z","updatedAt":"2026-01-01T12:00:00.000Z"},{"id":"prd_hoodie","sku":"HOO-001","slug":"trail-hoodie","name":"Trail Hoodie","description":"Fleece-lined hoodie.","priceCents":4999,"currency":"USD","stock":8,"active":true,"version":1,"createdAt":"2026-01-01T11:00:00.000Z","updatedAt":"2026-01-01T11:00:00.000Z"}],"pagination":{"limit":2,"hasMore":true,"nextCursor":"eyJjcmVhdGVkQXQiOiIyMDI2LTAxLTAxVDExOjAwOjAwLjAwMFoiLCJpZCI6InByZF9ob29kaWUifQ"}}
+
+$ curl -sS -i --request GET http://localhost:4011/api/tenants/ten_acme/products\?limit=2\&cursor=eyJjcmVhdGVkQXQiOiIyMDI2LTAxLTAxVDExOjAwOjAwLjAwMFoiLCJpZCI6InByZF9ob29kaWUifQ
+HTTP/1.1 200 OK
+X-Request-Id: c0515073-0a6f-4bb4-bad8-47adefe95031
+Content-Type: application/json; charset=utf-8
+Content-Length: 594
+Date: Thu, 29 Oct 2026 12:26:51 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"data":[{"id":"prd_mug","sku":"MUG-001","slug":"camp-mug","name":"Camp Mug","description":"Enamel mug, 350 ml.","priceCents":1299,"currency":"USD","stock":120,"active":true,"version":1,"createdAt":"2026-01-01T10:00:00.000Z","updatedAt":"2026-01-01T10:00:00.000Z"},{"id":"prd_tee","sku":"TEE-001","slug":"classic-tee","name":"Classic T-Shirt","description":"Heavyweight cotton tee.","priceCents":1999,"currency":"USD","stock":50,"active":true,"version":1,"createdAt":"2026-01-01T09:00:00.000Z","updatedAt":"2026-01-01T09:00:00.000Z"}],"pagination":{"limit":2,"hasMore":false,"nextCursor":null}}
+
+$ curl -sS -i --request GET http://localhost:4011/api/tenants/ten_acme/products\?limit=2\&cursor=eyJjcmVhdGVkQXQiOiIyMDI2LTAxLTAxVDExOjAwOjAwLjAwMFoiLCJpZCI6InByZF9ob29kaWUifQ\&offset=2
+HTTP/1.1 422 Unprocessable Entity
+X-Request-Id: c9881464-0c24-4818-b638-6532c0423e75
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 441
+Date: Thu, 29 Oct 2026 12:26:51 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/invalid_pagination","title":"Validation Failed","status":422,"detail":"Use either cursor or offset, not both.","instance":"/api/tenants/ten_acme/products?limit=2&cursor=eyJjcmVhdGVkQXQiOiIyMDI2LTAxLTAxVDExOjAwOjAwLjAwMFoiLCJpZCI6InByZF9ob29kaWUifQ&offset=2","code":"invalid_pagination","errors":[{"pointer":"/cursor","code":"mutually_exclusive","message":"cursor and offset cannot be combined."}]}
+
+$ curl -sS -i --request GET http://localhost:4011/api/tenants/ten_acme/products\?limit=2\&cursor=eyJjcmVhdGVkQXQiOiIyMDI2LTAxLTAxVDExOjAwOjAwLjAwMFoiLCJpZCI6InByZF9ob29kaWUifQ\&includeTotal=true
+HTTP/1.1 422 Unprocessable Entity
+X-Request-Id: 06f50d39-10f5-4637-b943-9d2dcfb1e10e
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 475
+Date: Thu, 29 Oct 2026 12:26:51 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/invalid_pagination","title":"Validation Failed","status":422,"detail":"Total counts are only available with offset pagination.","instance":"/api/tenants/ten_acme/products?limit=2&cursor=eyJjcmVhdGVkQXQiOiIyMDI2LTAxLTAxVDExOjAwOjAwLjAwMFoiLCJpZCI6InByZF9ob29kaWUifQ&includeTotal=true","code":"invalid_pagination","errors":[{"pointer":"/includeTotal","code":"unsupported_with_cursor","message":"Remove includeTotal or use offset."}]}
+
+$ curl -sS -i --request GET http://localhost:4011/api/tenants/ten_acme/products\?limit=2\&cursor=not-a-real-cursor
+HTTP/1.1 422 Unprocessable Entity
+X-Request-Id: 27472daa-7d94-44b9-b785-cd02aa276c54
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 367
+Date: Thu, 29 Oct 2026 12:26:51 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/invalid_cursor","title":"Validation Failed","status":422,"detail":"The cursor is malformed. Use nextCursor from the previous page.","instance":"/api/tenants/ten_acme/products?limit=2&cursor=not-a-real-cursor","code":"invalid_cursor","errors":[{"pointer":"/cursor","code":"invalid_cursor","message":"Cursor is not valid."}]}
+

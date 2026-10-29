@@ -1,0 +1,46 @@
+# 22-consistency-and-review.http
+
+$ curl -sS -i --request GET http://localhost:4010/v1/tenants/ten_acme/products/prd_tee -H 'Authorization: Bearer tok_acme_admin'
+HTTP/1.1 200 OK
+X-Request-Id: 0d3bce1b-3eb0-4322-abbe-3aa5e27e459e
+Content-Type: application/json; charset=utf-8
+Content-Length: 268
+Date: Thu, 29 Oct 2026 12:29:29 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"prd_tee","sku":"TEE-001","slug":"classic-tee","name":"Classic T-Shirt","description":"Heavyweight cotton tee.","priceCents":1999,"currency":"USD","stock":50,"active":true,"version":1,"createdAt":"2026-01-01T09:00:00.000Z","updatedAt":"2026-10-29T12:29:18.671Z"}
+
+$ curl -sS -i --request GET http://localhost:4010/v1/tenants/ten_acme/products\?limit=2 -H 'Authorization: Bearer tok_acme_admin'
+HTTP/1.1 200 OK
+X-Request-Id: 10301498-2058-4b66-9352-697cfe0c0a35
+Content-Type: application/json; charset=utf-8
+Content-Length: 668
+Date: Thu, 29 Oct 2026 12:29:29 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"data":[{"id":"prd_cap","sku":"CAP-001","slug":"running-cap","name":"Running Cap","description":"Lightweight cap.","priceCents":2499,"currency":"USD","stock":0,"active":false,"version":1,"createdAt":"2026-01-01T12:00:00.000Z","updatedAt":"2026-10-29T12:29:18.671Z"},{"id":"prd_hoodie","sku":"HOO-001","slug":"trail-hoodie","name":"Trail Hoodie","description":"Fleece-lined hoodie.","priceCents":4999,"currency":"USD","stock":8,"active":true,"version":1,"createdAt":"2026-01-01T11:00:00.000Z","updatedAt":"2026-10-29T12:29:18.671Z"}],"pagination":{"limit":2,"hasMore":true,"nextCursor":"eyJjcmVhdGVkQXQiOiIyMDI2LTAxLTAxVDExOjAwOjAwLjAwMFoiLCJpZCI6InByZF9ob29kaWUifQ"}}
+
+$ curl -sS -i --request GET http://localhost:4010/v1/tenants/ten_acme/products/prd_missing -H 'Authorization: Bearer tok_acme_admin'
+HTTP/1.1 404 Not Found
+X-Request-Id: 6aad89d8-1b3e-4b1c-ad16-30be9106332e
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 192
+Date: Thu, 29 Oct 2026 12:29:29 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/not_found","title":"Not Found","status":404,"detail":"Product not found.","instance":"/v1/tenants/ten_acme/products/prd_missing","code":"not_found"}
+
+$ curl -sS -i --request GET http://localhost:4010/v1/tenants/ten_acme/customers\?limit=2\&sort=name\&includeTotal=true -H 'Authorization: Bearer tok_acme_admin'
+HTTP/1.1 200 OK
+X-Request-Id: 40a4b8b8-ad24-49fe-8006-1026b174aae8
+Content-Type: application/json; charset=utf-8
+Content-Length: 601
+Date: Thu, 29 Oct 2026 12:29:29 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"data":[{"id":"cus_acme_27","email":"alice.cooper.27@example.com","name":"Alice Cooper","status":"ACTIVE","bannedAt":null,"banReason":null,"version":1,"createdAt":"2026-01-27T09:00:00.000Z","updatedAt":"2026-10-29T12:29:18.686Z"},{"id":"cus_acme_01","email":"alice.johnson.1@example.com","name":"Alice Johnson","status":"ACTIVE","bannedAt":null,"banReason":null,"version":1,"createdAt":"2026-01-01T09:00:00.000Z","updatedAt":"2026-10-29T12:29:18.686Z"}],"pagination":{"limit":2,"hasMore":true,"nextCursor":"eyJjcmVhdGVkQXQiOiIyMDI2LTAxLTAxVDA5OjAwOjAwLjAwMFoiLCJpZCI6ImN1c19hY21lXzAxIn0","total":30}}
+

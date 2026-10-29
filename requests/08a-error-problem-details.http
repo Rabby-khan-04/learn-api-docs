@@ -1,0 +1,29 @@
+@baseUrl = http://localhost:4011
+
+### 404 as Problem Details
+GET {{baseUrl}}/api/tenants/ten_acme/products/prd_missing
+
+### malformed JSON is 400, not 500
+POST {{baseUrl}}/api/tenants/ten_acme/products
+Content-Type: application/json
+
+{"sku": "BAD-001",
+
+### a validation failure is also Problem Details
+POST {{baseUrl}}/api/tenants/ten_acme/products
+Content-Type: application/json
+
+{
+  "sku": "tee-1",
+  "slug": "Bad Slug",
+  "name": "",
+  "priceCents": -1,
+  "currency": "usd",
+  "stock": 1.5
+}
+
+### no route at all still returns the same error shape
+GET {{baseUrl}}/api/tenants/ten_acme/invoices
+
+### every response carries a request id for support
+GET {{baseUrl}}/api/tenants/ten_acme/products/prd_tee

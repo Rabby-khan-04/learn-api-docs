@@ -1,0 +1,107 @@
+# 17-auth-authorization-tenant-scoping.http
+
+$ curl -sS -i --request GET http://localhost:4010/v1/tenants/ten_acme/products
+HTTP/1.1 401 Unauthorized
+X-Request-Id: 31735ee1-6feb-42e4-a433-32d0e148f027
+WWW-Authenticate: Bearer realm="api-learn", error="invalid_token"
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 200
+Date: Thu, 29 Oct 2026 12:28:45 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/invalid_token","title":"Unauthorized","status":401,"detail":"A Bearer token is required.","instance":"/v1/tenants/ten_acme/products","code":"invalid_token"}
+
+$ curl -sS -i --request GET http://localhost:4010/v1/tenants/ten_acme/products -H 'Authorization: Bearer tok_not_real'
+HTTP/1.1 401 Unauthorized
+X-Request-Id: 45a301f5-7e6f-4c67-a4af-8474231739f7
+WWW-Authenticate: Bearer realm="api-learn", error="invalid_token"
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 201
+Date: Thu, 29 Oct 2026 12:28:45 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/invalid_token","title":"Unauthorized","status":401,"detail":"The Bearer token is invalid.","instance":"/v1/tenants/ten_acme/products","code":"invalid_token"}
+
+$ curl -sS -i --request GET http://localhost:4010/v1/tenants/ten_globex/products -H 'Authorization: Bearer tok_acme_admin'
+HTTP/1.1 403 Forbidden
+X-Request-Id: 645de198-0b5c-4e8c-856a-f1f40759f18a
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 212
+Date: Thu, 29 Oct 2026 12:28:45 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/forbidden","title":"Forbidden","status":403,"detail":"This token is not allowed to access that tenant.","instance":"/v1/tenants/ten_globex/products","code":"forbidden"}
+
+$ curl -sS -i --request GET http://localhost:4010/v1/tenants/ten_acme/products\?limit=1 -H 'Authorization: Bearer tok_acme_admin'
+HTTP/1.1 200 OK
+X-Request-Id: bb43a65a-9a29-4251-89e0-cf398cd9a4be
+Content-Type: application/json; charset=utf-8
+Content-Length: 398
+Date: Thu, 29 Oct 2026 12:28:46 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"data":[{"id":"prd_cap","sku":"CAP-001","slug":"running-cap","name":"Running Cap","description":"Lightweight cap.","priceCents":2499,"currency":"USD","stock":0,"active":false,"version":1,"createdAt":"2026-01-01T12:00:00.000Z","updatedAt":"2026-10-29T12:28:43.654Z"}],"pagination":{"limit":1,"hasMore":true,"nextCursor":"eyJjcmVhdGVkQXQiOiIyMDI2LTAxLTAxVDEyOjAwOjAwLjAwMFoiLCJpZCI6InByZF9jYXAifQ"}}
+
+$ curl -sS -i --request POST http://localhost:4010/v1/tenants/ten_acme/products -H 'Authorization: Bearer tok_acme_support' -H 'Content-Type: application/json' --data-binary '{
+  "sku": "SUP-001",
+  "slug": "support-product",
+  "name": "Support Product",
+  "priceCents": 100,
+  "currency": "USD",
+  "stock": 1
+}'
+HTTP/1.1 403 Forbidden
+X-Request-Id: c4232ceb-9006-483a-bf98-957886fe850c
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 225
+Date: Thu, 29 Oct 2026 12:28:46 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/forbidden","title":"Forbidden","status":403,"detail":"This action requires one of these roles: ADMIN, PLATFORM_ADMIN.","instance":"/v1/tenants/ten_acme/products","code":"forbidden"}
+
+$ curl -sS -i --request POST http://localhost:4010/v1/tenants/ten_acme/products -H 'Authorization: Bearer tok_acme_admin' -H 'Content-Type: application/json' --data-binary '{
+  "sku": "ADM-001",
+  "slug": "admin-product",
+  "name": "Admin Product",
+  "priceCents": 100,
+  "currency": "USD",
+  "stock": 1
+}'
+HTTP/1.1 201 Created
+X-Request-Id: 76883c1b-e692-480b-beb0-048aa0ed458a
+Location: /v1/tenants/ten_acme/products/prd_3efcdb24-840d-4967-9c81-b44fbb45ce2a
+Content-Type: application/json; charset=utf-8
+Content-Length: 278
+Date: Thu, 29 Oct 2026 12:28:46 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"prd_3efcdb24-840d-4967-9c81-b44fbb45ce2a","sku":"ADM-001","slug":"admin-product","name":"Admin Product","description":null,"priceCents":100,"currency":"USD","stock":1,"active":true,"version":1,"createdAt":"2026-10-29T12:28:46.118Z","updatedAt":"2026-10-29T12:28:46.118Z"}
+
+$ curl -sS -i --request GET http://localhost:4010/v1/tenants/ten_globex/products\?limit=1 -H 'Authorization: Bearer tok_platform'
+HTTP/1.1 200 OK
+X-Request-Id: f9507431-7da3-4d94-ae79-7de4c9f3ada6
+Content-Type: application/json; charset=utf-8
+Content-Length: 403
+Date: Thu, 29 Oct 2026 12:28:46 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"data":[{"id":"prd_eu_tee","sku":"TEE-EU","slug":"eu-tee","name":"EU Classic Tee","description":"Euro edition tee.","priceCents":2199,"currency":"EUR","stock":25,"active":true,"version":1,"createdAt":"2026-01-01T14:00:00.000Z","updatedAt":"2026-10-29T12:28:43.654Z"}],"pagination":{"limit":1,"hasMore":true,"nextCursor":"eyJjcmVhdGVkQXQiOiIyMDI2LTAxLTAxVDE0OjAwOjAwLjAwMFoiLCJpZCI6InByZF9ldV90ZWUifQ"}}
+
+$ curl -sS -i --request GET http://localhost:4010/v1/tenants/ten_ghost/products -H 'Authorization: Bearer tok_platform'
+HTTP/1.1 403 Forbidden
+X-Request-Id: 34252706-c2bd-45cd-860b-399ca004bc35
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 211
+Date: Thu, 29 Oct 2026 12:28:46 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/forbidden","title":"Forbidden","status":403,"detail":"This token is not allowed to access that tenant.","instance":"/v1/tenants/ten_ghost/products","code":"forbidden"}
+

@@ -1,0 +1,55 @@
+# 07-json-conventions.http
+
+$ curl -sS -i --request GET http://localhost:4011/api/tenants/ten_acme/products/prd_tee
+HTTP/1.1 200 OK
+X-Request-Id: 01e38d80-620f-4bd3-89c5-d1576eb8f7e4
+Content-Type: application/json; charset=utf-8
+Content-Length: 268
+Date: Thu, 29 Oct 2026 12:26:53 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"prd_tee","sku":"TEE-001","slug":"classic-tee","name":"Classic T-Shirt","description":"Heavyweight cotton tee.","priceCents":1999,"currency":"USD","stock":50,"active":true,"version":1,"createdAt":"2026-01-01T09:00:00.000Z","updatedAt":"2026-01-01T09:00:00.000Z"}
+
+$ curl -sS -i --request POST http://localhost:4011/api/tenants/ten_acme/products -H 'Content-Type: application/json' --data-binary '{
+  "sku": "BTL-001",
+  "slug": "water-bottle",
+  "name": "Water Bottle",
+  "priceCents": 2499,
+  "currency": "USD",
+  "stock": 25,
+  "active": true
+}'
+HTTP/1.1 201 Created
+X-Request-Id: cfa04756-9505-4c7b-a1e8-65a9b9088272
+Location: /api/tenants/ten_acme/products/prd_85758322-d2d1-44b7-9239-05629cd6a4d1
+Content-Type: application/json; charset=utf-8
+Content-Length: 278
+Date: Thu, 29 Oct 2026 12:26:53 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"prd_85758322-d2d1-44b7-9239-05629cd6a4d1","sku":"BTL-001","slug":"water-bottle","name":"Water Bottle","description":null,"priceCents":2499,"currency":"USD","stock":25,"active":true,"version":1,"createdAt":"2026-10-29T12:26:53.755Z","updatedAt":"2026-10-29T12:26:53.755Z"}
+
+$ curl -sS -i --request GET http://localhost:4011/api/tenants/ten_acme/customers/cus_acme_01
+HTTP/1.1 200 OK
+X-Request-Id: 032e2f0d-cd53-4e1e-af43-ade0eb1eba27
+Content-Type: application/json; charset=utf-8
+Content-Length: 222
+Date: Thu, 29 Oct 2026 12:26:53 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"cus_acme_01","email":"alice.johnson.1@example.com","name":"Alice Johnson","status":"ACTIVE","bannedAt":null,"banReason":null,"version":1,"createdAt":"2026-01-01T09:00:00.000Z","updatedAt":"2026-01-01T09:00:00.000Z"}
+
+$ curl -sS -i --request GET http://localhost:4011/api/tenants/ten_acme/products\?limit=1
+HTTP/1.1 200 OK
+X-Request-Id: 3026c8c2-f32c-4529-8671-f0413d799d76
+Content-Type: application/json; charset=utf-8
+Content-Length: 463
+Date: Thu, 29 Oct 2026 12:26:53 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"data":[{"id":"prd_85758322-d2d1-44b7-9239-05629cd6a4d1","sku":"BTL-001","slug":"water-bottle","name":"Water Bottle","description":null,"priceCents":2499,"currency":"USD","stock":25,"active":true,"version":1,"createdAt":"2026-10-29T12:26:53.755Z","updatedAt":"2026-10-29T12:26:53.755Z"}],"pagination":{"limit":1,"hasMore":true,"nextCursor":"eyJjcmVhdGVkQXQiOiIyMDI2LTEwLTI5VDEyOjI2OjUzLjc1NVoiLCJpZCI6InByZF84NTc1ODMyMi1kMmQxLTQ0YjctOTIzOS0wNTYyOWNkNmE0ZDEifQ"}}
+

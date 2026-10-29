@@ -1,0 +1,47 @@
+@baseUrl = http://localhost:4011
+
+### query strings are coerced to numbers, then bounded
+GET {{baseUrl}}/api/tenants/ten_acme/products?limit=2
+
+### surrounding whitespace is trimmed before storing
+# @capture createdId = $.id
+POST {{baseUrl}}/api/tenants/ten_acme/products
+Content-Type: application/json
+
+{
+  "sku": "  KEY-001  ",
+  "slug": "  keyring  ",
+  "name": "  Keyring  ",
+  "priceCents": 499,
+  "currency": "USD",
+  "stock": 100
+}
+
+### unknown keys are rejected instead of silently dropped
+POST {{baseUrl}}/api/tenants/ten_acme/products
+Content-Type: application/json
+
+{
+  "sku": "PEN-001",
+  "slug": "pen",
+  "name": "Pen",
+  "priceCents": 199,
+  "currency": "USD",
+  "stock": 100,
+  "costCents": 50
+}
+
+### a boolean cannot be coerced from nonsense
+GET {{baseUrl}}/api/tenants/ten_acme/products?active=maybe
+
+### PATCH must contain at least one field
+PATCH {{baseUrl}}/api/tenants/ten_acme/products/prd_tee
+Content-Type: application/json
+
+{}
+
+### a null description is valid; an omitted one is a merge-patch no-op
+PATCH {{baseUrl}}/api/tenants/ten_acme/products/prd_tee
+Content-Type: application/json
+
+{ "description": null }

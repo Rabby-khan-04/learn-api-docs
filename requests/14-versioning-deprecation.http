@@ -1,0 +1,13 @@
+@baseUrl = http://localhost:4010
+
+### the old /api path still works, but announces its sunset
+GET {{baseUrl}}/api/tenants/ten_acme/products/prd_tee
+
+### the new /v1 path has no deprecation headers
+GET {{baseUrl}}/v1/tenants/ten_acme/products/prd_tee
+
+### /api and /v1 are the same handler, not a fork
+GET {{baseUrl}}/api/tenants/ten_acme/products?limit=1&fields=id,name
+
+### an unversioned future path does not exist
+GET {{baseUrl}}/v2/tenants/ten_acme/products

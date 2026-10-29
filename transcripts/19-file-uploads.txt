@@ -1,0 +1,88 @@
+# 19-file-uploads.http
+
+$ curl -sS -i --request POST http://localhost:4010/v1/tenants/ten_acme/uploads\?productId=prd_tee -H 'Authorization: Bearer tok_acme_admin' -F file=@requests/fixtures/pixel.png;type=image/png
+HTTP/1.1 201 Created
+X-Request-Id: 10719487-7439-45e7-a78c-0e76d980c4df
+Cache-Control: no-store
+Location: /v1/tenants/ten_acme/uploads/upl_04f56da6-b9c4-4c85-8e81-a28b96c30165
+Content-Type: application/json; charset=utf-8
+Content-Length: 336
+Date: Thu, 29 Oct 2026 12:28:59 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"upl_04f56da6-b9c4-4c85-8e81-a28b96c30165","productId":"prd_tee","filename":"pixel.png","contentType":"image/png","sizeBytes":70,"url":"/v1/tenants/ten_acme/uploads/upl_04f56da6-b9c4-4c85-8e81-a28b96c30165","checksumSha256":"c414cd0e204de974f73753c7e28d7638e7b3691bb8b1a2bab6b25bb7fed7ce77","createdAt":"2026-10-29T12:28:59.656Z"}
+
+$ curl -sS -i --request GET http://localhost:4010/v1/tenants/ten_acme/uploads/upl_04f56da6-b9c4-4c85-8e81-a28b96c30165 -H 'Authorization: Bearer tok_acme_admin'
+HTTP/1.1 200 OK
+X-Request-Id: 6d753af0-47fe-467a-b514-a897508253ff
+Content-Type: image/png
+Content-Disposition: inline; filename="pixel.png"
+Cache-Control: private, max-age=300
+X-Content-Type-Options: nosniff
+Accept-Ranges: bytes
+Last-Modified: Thu, 29 Oct 2026 12:28:59 GMT
+Content-Length: 70
+Date: Thu, 29 Oct 2026 12:28:59 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+<binary body: 70 bytes, image/png>
+
+$ curl -sS -i --request GET http://localhost:4010/v1/tenants/ten_globex/uploads/upl_04f56da6-b9c4-4c85-8e81-a28b96c30165 -H 'Authorization: Bearer tok_acme_admin'
+HTTP/1.1 403 Forbidden
+X-Request-Id: af25c455-90cd-4ab3-b596-5ed385968af1
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 252
+Date: Thu, 29 Oct 2026 12:28:59 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/forbidden","title":"Forbidden","status":403,"detail":"This token is not allowed to access that tenant.","instance":"/v1/tenants/ten_globex/uploads/upl_04f56da6-b9c4-4c85-8e81-a28b96c30165","code":"forbidden"}
+
+$ curl -sS -i --request POST http://localhost:4010/v1/tenants/ten_acme/uploads -H 'Authorization: Bearer tok_acme_admin' -F file=@requests/fixtures/not-an-image.png;type=image/png
+HTTP/1.1 415 Unsupported Media Type
+X-Request-Id: b9c25c73-f628-4011-870d-3b5ae4cc9fac
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 251
+Date: Thu, 29 Oct 2026 12:28:59 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/unsupported_media_type","title":"Unsupported Media Type","status":415,"detail":"The file content is not a PNG, JPEG, or WebP image.","instance":"/v1/tenants/ten_acme/uploads","code":"unsupported_media_type"}
+
+$ curl -sS -i --request POST http://localhost:4010/v1/tenants/ten_acme/uploads -H 'Authorization: Bearer tok_acme_admin' -F file=@requests/fixtures/too-big.png;type=image/png
+HTTP/1.1 100 Continue
+
+HTTP/1.1 413 Payload Too Large
+X-Request-Id: 82dde6b8-0e8c-4691-afbb-dc7878660df6
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 216
+Date: Thu, 29 Oct 2026 12:28:59 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/file_too_large","title":"Content Too Large","status":413,"detail":"Images must be at most 2097152 bytes.","instance":"/v1/tenants/ten_acme/uploads","code":"file_too_large"}
+
+$ curl -sS -i --request POST http://localhost:4010/v1/tenants/ten_acme/uploads\?productId=prd_missing -H 'Authorization: Bearer tok_acme_admin' -F file=@requests/fixtures/pixel.png;type=image/png
+HTTP/1.1 404 Not Found
+X-Request-Id: b86270b6-0f29-4300-adf3-8c6685435c7c
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 201
+Date: Thu, 29 Oct 2026 12:28:59 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/not_found","title":"Not Found","status":404,"detail":"Product not found.","instance":"/v1/tenants/ten_acme/uploads?productId=prd_missing","code":"not_found"}
+
+$ curl -sS -i --request GET http://localhost:4010/v1/tenants/ten_globex/uploads/upl_04f56da6-b9c4-4c85-8e81-a28b96c30165 -H 'Authorization: Bearer tok_globex_admin'
+HTTP/1.1 404 Not Found
+X-Request-Id: 7a51a84e-159f-4e6d-b131-1e536289e18d
+Content-Type: application/problem+json; charset=utf-8
+Content-Length: 221
+Date: Thu, 29 Oct 2026 12:28:59 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"type":"https://api-learn.example/problems/not_found","title":"Not Found","status":404,"detail":"Upload not found.","instance":"/v1/tenants/ten_globex/uploads/upl_04f56da6-b9c4-4c85-8e81-a28b96c30165","code":"not_found"}
+

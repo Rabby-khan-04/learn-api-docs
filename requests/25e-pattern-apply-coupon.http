@@ -1,0 +1,83 @@
+@baseUrl = http://localhost:4010
+@token = tok_acme_admin
+
+### an expired coupon is rejected
+POST {{baseUrl}}/v1/tenants/ten_acme/orders/ord_demo_pending/coupon
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "code": "EXPIRED10" }
+
+### a coupon that belongs to another tenant is not even found
+POST {{baseUrl}}/v1/tenants/ten_acme/orders/ord_demo_pending/coupon
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "code": "EU10" }
+
+### 10% of 4999 cents is 499.9, rounded to 500
+POST {{baseUrl}}/v1/tenants/ten_acme/orders/ord_demo_pending/coupon
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "code": "save10" }
+
+### an order gets exactly one coupon
+POST {{baseUrl}}/v1/tenants/ten_acme/orders/ord_demo_pending/coupon
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "code": "SAVE10" }
+
+### the coupon with a single redemption succeeds once
+# @capture maxOrderId = $.id
+POST {{baseUrl}}/v1/tenants/ten_acme/orders
+Authorization: Bearer {{token}}
+Content-Type: application/json
+Idempotency-Key: coupon-max1-order-a
+
+{
+  "customerId": "cus_acme_14",
+  "items": [ { "productId": "prd_mug", "quantity": 1 } ]
+}
+
+### apply the coupon to the first order
+POST {{baseUrl}}/v1/tenants/ten_acme/orders/{{maxOrderId}}/coupon
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "code": "MAX1" }
+
+### a second order cannot use the exhausted coupon
+# @capture secondOrderId = $.id
+POST {{baseUrl}}/v1/tenants/ten_acme/orders
+Authorization: Bearer {{token}}
+Content-Type: application/json
+Idempotency-Key: coupon-max1-order-b
+
+{
+  "customerId": "cus_acme_15",
+  "items": [ { "productId": "prd_tee", "quantity": 1 } ]
+}
+
+### apply the exhausted coupon to the second order
+POST {{baseUrl}}/v1/tenants/ten_acme/orders/{{secondOrderId}}/coupon
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "code": "MAX1" }
+
+### a paid order cannot be discounted after the fact
+POST {{baseUrl}}/v1/tenants/ten_acme/orders/ord_demo_payable/payments
+Authorization: Bearer {{token}}
+Content-Type: application/json
+Idempotency-Key: coupon-pay-demo
+
+{ "provider": "fakepay", "providerRef": "fp_coupon_demo" }
+
+### a paid order rejects a coupon
+POST {{baseUrl}}/v1/tenants/ten_acme/orders/ord_demo_payable/coupon
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "code": "SAVE10" }

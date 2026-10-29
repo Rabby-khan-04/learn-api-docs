@@ -1,0 +1,45 @@
+{
+  "name": "api-learn",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Beginner-to-advanced REST API design, built on a multi-tenant e-commerce example",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "start": "tsx src/server.ts",
+    "start:memory": "tsx src/server.memory.ts",
+    "typecheck": "tsc --noEmit",
+    "db:check": "node scripts/preflight.mjs",
+    "db:up": "docker compose up -d --wait",
+    "db:down": "docker compose down",
+    "db:generate": "npm run db:check && prisma generate",
+    "db:migrate": "npm run db:check && prisma migrate dev",
+    "db:deploy": "npm run db:check && prisma migrate deploy",
+    "db:reset": "npm run db:check && prisma migrate reset --force",
+    "db:seed": "npm run db:check && tsx prisma/seed.ts",
+    "webhook:receiver": "tsx scripts/webhook-receiver.ts",
+    "http": "node scripts/run-http.mjs"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "7.10.1",
+    "@prisma/client": "7.10.1",
+    "dotenv": "17.4.2",
+    "express": "5.3.0",
+    "multer": "2.5.0",
+    "pg": "8.23.1",
+    "swagger-ui-dist": "5.34.0",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@types/express": "5.0.6",
+    "@types/multer": "2.3.0",
+    "@types/node": "24.10.1",
+    "@types/pg": "8.15.6",
+    "prisma": "7.10.1",
+    "tsx": "4.23.15",
+    "typescript": "5.9.3"
+  }
+}

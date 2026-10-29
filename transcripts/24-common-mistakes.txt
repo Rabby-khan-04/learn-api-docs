@@ -1,0 +1,68 @@
+# 24-common-mistakes.http
+
+$ curl -sS -i --request GET http://localhost:4013/getProducts
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Content-Length: 61
+ETag: W/"3d-xtcM8R+WMJKDR6iA3GBOirY1ZxQ"
+Date: Thu, 29 Oct 2026 12:29:56 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"success":false,"error":"Use /products instead","data":null}
+
+$ curl -sS -i --request GET http://localhost:4013/products\?tenantId=ten_acme
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Content-Length: 259
+ETag: W/"103-0uWgNfvGPIjFzwK2Z29NxwWS9hY"
+Date: Thu, 29 Oct 2026 12:29:56 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+[{"id":1,"tenantId":"ten_acme","name":"Classic T-Shirt","price":19.99,"internalCost":7.1},{"id":2,"tenantId":"ten_acme","name":"Camp Mug","price":12.99,"internalCost":4.2},{"id":3,"tenantId":"ten_globex","name":"EU Camp Mug","price":11.99,"internalCost":3.9}]
+
+$ curl -sS -i --request GET http://localhost:4013/products/3
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Content-Length: 86
+ETag: W/"56-c6PZg50018pUQs1kDm198F8Xad8"
+Date: Thu, 29 Oct 2026 12:29:56 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":3,"tenantId":"ten_globex","name":"EU Camp Mug","price":11.99,"internalCost":3.9}
+
+$ curl -sS -i --request GET http://localhost:4013/orders/999
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Content-Length: 40
+ETag: W/"28-dvpaUTn8yKT+vtZUUpRLFWoHMiE"
+Date: Thu, 29 Oct 2026 12:29:56 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"ok":false,"message":"Order not found"}
+
+$ curl -sS -i --request GET http://localhost:4013/products-n-plus-one
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Content-Length: 329
+ETag: W/"149-UiXbyS+AhYHAv0m6DEgdiFdIeNw"
+Date: Thu, 29 Oct 2026 12:29:56 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"rows":[{"id":1,"tenantId":"ten_acme","name":"Classic T-Shirt","price":19.99,"internalCost":7.1,"stock":11},{"id":2,"tenantId":"ten_acme","name":"Camp Mug","price":12.99,"internalCost":4.2,"stock":12},{"id":3,"tenantId":"ten_globex","name":"EU Camp Mug","price":11.99,"internalCost":3.9,"stock":13}],"simulatedQueries":3,"ms":0}
+
+
+<mistakes-server log while /products-n-plus-one ran:>
+mistakes server (DANGER DEMO) listening on http://localhost:4013
+SELECT * FROM inventory WHERE product_id = 1
+SELECT * FROM inventory WHERE product_id = 2
+SELECT * FROM inventory WHERE product_id = 3

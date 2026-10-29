@@ -1,0 +1,67 @@
+# 15-caching-conditional-requests.http
+
+$ curl -sS -i --request GET http://localhost:4010/api/tenants/ten_acme/products/prd_tee
+HTTP/1.1 200 OK
+X-Request-Id: d23e89ab-5f22-4117-ae91-705c2e05368d
+ETag: "AJ7oBtDRb-thQ4rRBA_b"
+Cache-Control: private, max-age=60
+Vary: Authorization
+Content-Type: application/json; charset=utf-8
+Content-Length: 268
+Date: Thu, 29 Oct 2026 12:27:52 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"prd_tee","sku":"TEE-001","slug":"classic-tee","name":"Classic T-Shirt","description":"Heavyweight cotton tee.","priceCents":2199,"currency":"USD","stock":45,"active":true,"version":3,"createdAt":"2026-01-01T09:00:00.000Z","updatedAt":"2026-10-29T12:27:25.073Z"}
+
+$ curl -sS -i --request GET http://localhost:4010/api/tenants/ten_acme/products/prd_tee -H 'If-None-Match: "AJ7oBtDRb-thQ4rRBA_b"'
+HTTP/1.1 304 Not Modified
+X-Request-Id: e90bbb85-bf7b-4d9a-a609-f2f91db3cf94
+ETag: "AJ7oBtDRb-thQ4rRBA_b"
+Cache-Control: private, max-age=60
+Vary: Authorization
+Date: Thu, 29 Oct 2026 12:27:52 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+
+$ curl -sS -i --request GET http://localhost:4010/api/tenants/ten_acme/products\?limit=2
+HTTP/1.1 200 OK
+X-Request-Id: 692e0a9c-7c60-4e32-a58e-5ac17a84897e
+Cache-Control: private, no-store
+Content-Type: application/json; charset=utf-8
+Content-Length: 668
+Date: Thu, 29 Oct 2026 12:27:52 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"data":[{"id":"prd_cap","sku":"CAP-001","slug":"running-cap","name":"Running Cap","description":"Lightweight cap.","priceCents":2499,"currency":"USD","stock":0,"active":false,"version":1,"createdAt":"2026-01-01T12:00:00.000Z","updatedAt":"2026-10-29T12:27:24.625Z"},{"id":"prd_hoodie","sku":"HOO-001","slug":"trail-hoodie","name":"Trail Hoodie","description":"Fleece-lined hoodie.","priceCents":4999,"currency":"USD","stock":8,"active":true,"version":1,"createdAt":"2026-01-01T11:00:00.000Z","updatedAt":"2026-10-29T12:27:24.625Z"}],"pagination":{"limit":2,"hasMore":true,"nextCursor":"eyJjcmVhdGVkQXQiOiIyMDI2LTAxLTAxVDExOjAwOjAwLjAwMFoiLCJpZCI6InByZF9ob29kaWUifQ"}}
+
+$ curl -sS -i --request GET http://localhost:4010/api/tenants/ten_globex/products/prd_eu_mug
+HTTP/1.1 200 OK
+X-Request-Id: d36bd3d3-959d-4efd-a531-b027f6ae2df6
+ETag: "ajeVTymtRYiiXtiDqYdp"
+Cache-Control: private, max-age=60
+Vary: Authorization
+Content-Type: application/json; charset=utf-8
+Content-Length: 251
+Date: Thu, 29 Oct 2026 12:27:52 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"prd_eu_mug","sku":"MUG-EU","slug":"eu-mug","name":"EU Camp Mug","description":"Euro edition.","priceCents":1199,"currency":"EUR","stock":40,"active":true,"version":1,"createdAt":"2026-01-01T13:00:00.000Z","updatedAt":"2026-10-29T12:27:24.625Z"}
+
+$ curl -sS -i --request GET http://localhost:4010/api/tenants/ten_acme/products/prd_tee -H 'Authorization: Bearer tok_acme_admin'
+HTTP/1.1 200 OK
+X-Request-Id: 96ec2946-f173-452c-8bbc-b29e44b15ace
+ETag: "AJ7oBtDRb-thQ4rRBA_b"
+Cache-Control: private, max-age=60
+Vary: Authorization
+Content-Type: application/json; charset=utf-8
+Content-Length: 268
+Date: Thu, 29 Oct 2026 12:27:52 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"prd_tee","sku":"TEE-001","slug":"classic-tee","name":"Classic T-Shirt","description":"Heavyweight cotton tee.","priceCents":2199,"currency":"USD","stock":45,"active":true,"version":3,"createdAt":"2026-01-01T09:00:00.000Z","updatedAt":"2026-10-29T12:27:25.073Z"}
+

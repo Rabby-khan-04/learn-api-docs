@@ -1,0 +1,17 @@
+@baseUrl = http://localhost:4011
+
+### first cursor page (default sort: newest first)
+# @capture nextCursor = $.pagination.nextCursor
+GET {{baseUrl}}/api/tenants/ten_acme/products?limit=2
+
+### second cursor page
+GET {{baseUrl}}/api/tenants/ten_acme/products?limit=2&cursor={{nextCursor}}
+
+### cursor cannot be combined with offset
+GET {{baseUrl}}/api/tenants/ten_acme/products?limit=2&cursor={{nextCursor}}&offset=2
+
+### totals are only offered for offset pagination
+GET {{baseUrl}}/api/tenants/ten_acme/products?limit=2&cursor={{nextCursor}}&includeTotal=true
+
+### a tampered cursor is rejected
+GET {{baseUrl}}/api/tenants/ten_acme/products?limit=2&cursor=not-a-real-cursor

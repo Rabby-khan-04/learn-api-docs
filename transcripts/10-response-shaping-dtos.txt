@@ -1,0 +1,65 @@
+# 10-response-shaping-dtos.http
+
+$ curl -sS -i --request GET http://localhost:4011/api/tenants/ten_acme/products\?limit=1
+HTTP/1.1 200 OK
+X-Request-Id: 4162afed-ea73-4aa2-bd64-d4bee40938f6
+Content-Type: application/json; charset=utf-8
+Content-Length: 398
+Date: Thu, 29 Oct 2026 12:27:02 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"data":[{"id":"prd_cap","sku":"CAP-001","slug":"running-cap","name":"Running Cap","description":"Lightweight cap.","priceCents":2499,"currency":"USD","stock":0,"active":false,"version":1,"createdAt":"2026-01-01T12:00:00.000Z","updatedAt":"2026-01-01T12:00:00.000Z"}],"pagination":{"limit":1,"hasMore":true,"nextCursor":"eyJjcmVhdGVkQXQiOiIyMDI2LTAxLTAxVDEyOjAwOjAwLjAwMFoiLCJpZCI6InByZF9jYXAifQ"}}
+
+$ curl -sS -i --request GET http://localhost:4011/api/tenants/ten_acme/products/prd_tee
+HTTP/1.1 200 OK
+X-Request-Id: a51d4834-40d9-42f8-a789-3ac957d78b86
+Content-Type: application/json; charset=utf-8
+Content-Length: 268
+Date: Thu, 29 Oct 2026 12:27:02 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"prd_tee","sku":"TEE-001","slug":"classic-tee","name":"Classic T-Shirt","description":"Heavyweight cotton tee.","priceCents":1999,"currency":"USD","stock":50,"active":true,"version":1,"createdAt":"2026-01-01T09:00:00.000Z","updatedAt":"2026-01-01T09:00:00.000Z"}
+
+$ curl -sS -i --request POST http://localhost:4011/api/tenants/ten_acme/products -H 'Content-Type: application/json' --data-binary '{
+  "sku": "LMP-001",
+  "slug": "camp-lamp",
+  "name": "Camp Lamp",
+  "priceCents": 3499,
+  "currency": "USD",
+  "stock": 12
+}'
+HTTP/1.1 201 Created
+X-Request-Id: 5c4fc677-84d7-4466-b6e5-29cc31d31dde
+Location: /api/tenants/ten_acme/products/prd_505be7a1-01de-497f-aae3-ec0ee433c440
+Content-Type: application/json; charset=utf-8
+Content-Length: 272
+Date: Thu, 29 Oct 2026 12:27:02 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"prd_505be7a1-01de-497f-aae3-ec0ee433c440","sku":"LMP-001","slug":"camp-lamp","name":"Camp Lamp","description":null,"priceCents":3499,"currency":"USD","stock":12,"active":true,"version":1,"createdAt":"2026-10-29T12:27:02.468Z","updatedAt":"2026-10-29T12:27:02.468Z"}
+
+$ curl -sS -i --request GET http://localhost:4011/api/tenants/ten_acme/customers/cus_acme_01
+HTTP/1.1 200 OK
+X-Request-Id: d3dc0840-86ee-49f7-8832-b194b10ac4b0
+Content-Type: application/json; charset=utf-8
+Content-Length: 222
+Date: Thu, 29 Oct 2026 12:27:02 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"cus_acme_01","email":"alice.johnson.1@example.com","name":"Alice Johnson","status":"ACTIVE","bannedAt":null,"banReason":null,"version":1,"createdAt":"2026-01-01T09:00:00.000Z","updatedAt":"2026-01-01T09:00:00.000Z"}
+
+$ curl -sS -i --request GET http://localhost:4011/api/tenants/ten_acme/products/prd_505be7a1-01de-497f-aae3-ec0ee433c440\?fields=id,name,priceCents
+HTTP/1.1 200 OK
+X-Request-Id: 3a84f5cc-941a-4020-9555-689cf804cbc4
+Content-Type: application/json; charset=utf-8
+Content-Length: 272
+Date: Thu, 29 Oct 2026 12:27:02 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"id":"prd_505be7a1-01de-497f-aae3-ec0ee433c440","sku":"LMP-001","slug":"camp-lamp","name":"Camp Lamp","description":null,"priceCents":3499,"currency":"USD","stock":12,"active":true,"version":1,"createdAt":"2026-10-29T12:27:02.468Z","updatedAt":"2026-10-29T12:27:02.468Z"}
+

@@ -1,0 +1,108 @@
+@baseUrl = http://localhost:4010
+@token = tok_acme_admin
+
+### create an order, snapshotting prices and stock
+# @capture orderId = $.id
+POST {{baseUrl}}/v1/tenants/ten_acme/orders
+Authorization: Bearer {{token}}
+Content-Type: application/json
+Idempotency-Key: pattern-order-001
+
+{
+  "customerId": "cus_acme_01",
+  "items": [
+    { "productId": "prd_tee", "quantity": 1 },
+    { "productId": "prd_mug", "quantity": 2 }
+  ]
+}
+
+### replay is safe
+POST {{baseUrl}}/v1/tenants/ten_acme/orders
+Authorization: Bearer {{token}}
+Content-Type: application/json
+Idempotency-Key: pattern-order-001
+
+{
+  "customerId": "cus_acme_01",
+  "items": [
+    { "productId": "prd_tee", "quantity": 1 },
+    { "productId": "prd_mug", "quantity": 2 }
+  ]
+}
+
+### the same key with another payload is a conflict
+POST {{baseUrl}}/v1/tenants/ten_acme/orders
+Authorization: Bearer {{token}}
+Content-Type: application/json
+Idempotency-Key: pattern-order-001
+
+{
+  "customerId": "cus_acme_01",
+  "items": [ { "productId": "prd_tee", "quantity": 9 } ]
+}
+
+### a later price change does not rewrite the order snapshot
+PATCH {{baseUrl}}/v1/tenants/ten_acme/products/prd_tee
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "priceCents": 2599 }
+
+### the order still shows the price at purchase time
+GET {{baseUrl}}/v1/tenants/ten_acme/orders/{{orderId}}
+Authorization: Bearer {{token}}
+
+### not enough stock: 409 and the transaction rolls back
+POST {{baseUrl}}/v1/tenants/ten_acme/orders
+Authorization: Bearer {{token}}
+Content-Type: application/json
+Idempotency-Key: pattern-order-oos
+
+{
+  "customerId": "cus_acme_01",
+  "items": [ { "productId": "prd_hoodie", "quantity": 999 } ]
+}
+
+### stock was not partially decremented
+GET {{baseUrl}}/v1/tenants/ten_acme/products/prd_hoodie
+Authorization: Bearer {{token}}
+
+### an inactive product cannot be ordered
+POST {{baseUrl}}/v1/tenants/ten_acme/orders
+Authorization: Bearer {{token}}
+Content-Type: application/json
+Idempotency-Key: pattern-order-inactive
+
+{
+  "customerId": "cus_acme_01",
+  "items": [ { "productId": "prd_cap", "quantity": 1 } ]
+}
+
+### an unknown product is a 422
+POST {{baseUrl}}/v1/tenants/ten_acme/orders
+Authorization: Bearer {{token}}
+Content-Type: application/json
+Idempotency-Key: pattern-order-missing
+
+{
+  "customerId": "cus_acme_01",
+  "items": [ { "productId": "prd_missing", "quantity": 1 } ]
+}
+
+### ban a customer, then try to order for them
+POST {{baseUrl}}/v1/tenants/ten_acme/customers/cus_acme_09/ban
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "reason": "Repeated chargebacks" }
+
+### the banned customer's order is rejected
+POST {{baseUrl}}/v1/tenants/ten_acme/orders
+Authorization: Bearer {{token}}
+Content-Type: application/json
+Idempotency-Key: pattern-order-banned
+
+{
+  "customerId": "cus_acme_09",
+  "items": [ { "productId": "prd_mug", "quantity": 1 } ]
+}

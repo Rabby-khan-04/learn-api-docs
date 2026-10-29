@@ -1,0 +1,19 @@
+@baseUrl = http://localhost:4011
+
+### first page, with a total count
+GET {{baseUrl}}/api/tenants/ten_acme/products?limit=2&offset=0&includeTotal=true
+
+### second page
+GET {{baseUrl}}/api/tenants/ten_acme/products?limit=2&offset=2&includeTotal=true
+
+### an offset past the end returns an empty page, not an error
+GET {{baseUrl}}/api/tenants/ten_acme/products?limit=2&offset=100&includeTotal=true
+
+### limit must be between 1 and 100
+GET {{baseUrl}}/api/tenants/ten_acme/products?limit=0
+
+### limit above the maximum is rejected
+GET {{baseUrl}}/api/tenants/ten_acme/products?limit=101
+
+### a non-numeric offset is rejected
+GET {{baseUrl}}/api/tenants/ten_acme/products?offset=abc
